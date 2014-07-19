@@ -180,6 +180,12 @@
 					</lifecycleMappingMetadata>
 				</configuration>
 			</plugin>
+
+			
+		</plugins>
+	</pluginManagement>
+		<plugins>
+			
 			<plugin>
 				<groupId>org.openmrs.maven.plugins</groupId>
 				<artifactId>maven-openmrs-plugin</artifactId>
@@ -296,7 +302,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</pluginManagement>
 	</build>
 
 </project>

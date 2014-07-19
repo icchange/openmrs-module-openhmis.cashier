@@ -27,14 +27,20 @@ curl(
 			this.patientUuid = openhmis.getQueryStringParameter("patientUuid");
 			
 			this.patientView = new openhmis.PatientView();
+			var self = this;
+
+			
 			// Set up patient search selection handler
-			openhmis.doSelectionHandler = this.patientView.takeRawPatient;
+			openhmis.doSelectionHandler = function(i, d){
+				self.patientView.takeRawPatient(i, d);
+				console.log(self.patientView.model);
+				$j(".visit").hide()
+			};
 			
 			var options = new openhmis.GenericModel([], {
 				urlRoot: openhmis.url.page + openhmis.url.cashierBase + "options.json"
 			});
 		
-			var self = this;
 			options.fetch({ success: function(options, resp) {
 				if (resp.exception) {
 					openhmis.error({

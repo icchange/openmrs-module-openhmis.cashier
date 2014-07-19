@@ -16,10 +16,16 @@ package org.openmrs.module.webservices.rest.resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.openmrs.OpenmrsObject;
 import org.openmrs.Provider;
 import org.openmrs.User;
 import org.openmrs.api.AdministrationService;
@@ -36,6 +42,9 @@ import org.openmrs.module.openhmis.cashier.api.model.Payment;
 import org.openmrs.module.openhmis.cashier.api.model.Timesheet;
 import org.openmrs.module.openhmis.cashier.api.util.RoundingUtil;
 import org.openmrs.module.openhmis.cashier.web.CashierWebConstants;
+import org.openmrs.module.webservices.rest.SimpleObject;
+import org.openmrs.module.webservices.rest.web.ConversionUtil;
+import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.annotation.PropertySetter;
 import org.openmrs.module.webservices.rest.web.annotation.Resource;
@@ -43,7 +52,17 @@ import org.openmrs.module.webservices.rest.web.representation.DefaultRepresentat
 import org.openmrs.module.webservices.rest.web.representation.FullRepresentation;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
+import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceHandler;
+import org.openmrs.module.webservices.rest.web.response.ConversionException;
+import org.openmrs.module.webservices.rest.web.response.ObjectNotFoundException;
+import org.openmrs.module.webservices.rest.web.response.ResourceDoesNotSupportOperationException;
+import org.openmrs.module.webservices.rest.web.response.ResponseException;
+import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.validator.ValidateUtil;
 import org.springframework.web.client.RestClientException;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription.Property;
 
 @Resource(name=RestConstants.VERSION_2 + "/cashier/bill", supportedClass=Bill.class, supportedOpenmrsVersions={"1.9"})
 public class BillResource extends BaseRestDataResource<Bill> {
@@ -80,6 +99,35 @@ public class BillResource extends BaseRestDataResource<Bill> {
 		return description;
 	}
 
+
+	public DelegatingResourceDescription getSoftUpdatableProperties() throws ResourceDoesNotSupportOperationException {		
+		DelegatingResourceDescription description = super.getUpdatableProperties();
+		description.addProperty("cashPoint");
+		description.addProperty("cashier");
+		description.addProperty("lineItems");
+		description.addProperty("payments");
+		description.addProperty("status");
+		return description;
+	}
+	
+	
+	/*
+	@Override
+	public DelegatingResourceDescription getUpdatableProperties() throws ResourceDoesNotSupportOperationException {		
+		DelegatingResourceDescription description = super.getUpdatableProperties();
+		description.addProperty("adjustedBy", Representation.REF);
+		description.addProperty("billAdjusted", Representation.REF);
+		description.addProperty("cashPoint", Representation.REF);
+		description.addProperty("cashier", Representation.REF);
+		description.addProperty("lineItems");
+		description.addProperty("patient", Representation.REF);
+		description.addProperty("payments", Representation.FULL);
+		description.addProperty("receiptNumber");
+		description.addProperty("status");
+		return description;
+	}
+	*/
+	
 	@Override
 	public List<String> getPropertiesToExposeAsSubResources() {
 		return Arrays.asList("payments");
@@ -191,6 +239,57 @@ public class BillResource extends BaseRestDataResource<Bill> {
 	@Override
 	public Bill newDelegate() {
 		return new Bill();
+	}
+
+
+	@Override
+	public Object update(String uuid, SimpleObject propertiesToUpdate, RequestContext context) throws ResponseException {
+
+		Bill delegate = getByUniqueId(uuid);
+			
+		
+		if (delegate == null)
+			throw new ObjectNotFoundException();
+
+		
+		if (hasTypesDefined()) {
+			// if they specify a type discriminator it must match the expected one--type can't be modified
+			if (propertiesToUpdate.containsKey(RestConstants.PROPERTY_FOR_TYPE)) {
+				String type = (String) propertiesToUpdate.remove(RestConstants.PROPERTY_FOR_TYPE);
+				if (!delegate.getClass().equals(getActualSubclass(type))) {
+					String nameToShow = getTypeName(delegate);
+					if (nameToShow == null)
+						nameToShow = delegate.getClass().getName();
+					throw new IllegalArgumentException("You passed " + RestConstants.PROPERTY_FOR_TYPE + "=" + type
+					        + " but this instance is a " + nameToShow);
+				}
+			}
+		}
+
+		
+		if (delegate.getStatus() == BillStatus.PENDING) {
+			
+			setConvertedProperties(delegate, propertiesToUpdate, getSoftUpdatableProperties(), false);
+			
+		} else {
+			
+			DelegatingResourceHandler<? extends Bill> handler = getResourceHandler(delegate);
+
+			setConvertedProperties(delegate, propertiesToUpdate, handler.getUpdatableProperties(), false);
+	
+		}
+		
+		ValidateUtil.validate(delegate);
+		delegate = save(delegate);
+
+		SimpleObject ret = (SimpleObject) ConversionUtil.convertToRepresentation(delegate, Representation.DEFAULT);
+
+		// add the 'type' discriminator if we support subclasses
+		if (hasTypesDefined()) {
+			ret.add(RestConstants.PROPERTY_FOR_TYPE, getTypeName(delegate));
+		}
+
+		return ret;		
 	}
 
 }
