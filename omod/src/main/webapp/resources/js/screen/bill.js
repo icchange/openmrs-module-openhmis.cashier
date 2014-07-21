@@ -166,6 +166,10 @@ curl(
 			$saveButton = $('#saveBill');
 			$postButton = $('#postBill');
 			$printButton = $("#printReceipt");
+			
+			$saveButton.remove();
+			$printButton.remove();
+			
 			switch (this.billView.bill.get("status")) {
 				case BillStatus.PENDING:
 					$saveButton.val(__("Save Bill"));
@@ -211,6 +215,11 @@ curl(
 				case BillStatus.ADJUSTED:
 					$saveButton.remove();
 					break;
+				
+				$saveButton.remove();
+				$printButton.remove();
+				$postButton.remove();
+			
 			}
 
 			this.billView.render();
