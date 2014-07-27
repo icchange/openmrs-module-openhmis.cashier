@@ -167,7 +167,7 @@ curl(
 			$postButton = $('#postBill');
 			$printButton = $("#printReceipt");
 			
-			$saveButton.remove();
+			//$saveButton.remove();
 			$printButton.remove();
 			
 			switch (this.billView.bill.get("status")) {
@@ -200,6 +200,8 @@ curl(
 					var $cashPointLi = $("li.cashPoint");
 					if (!$cashPointLi.hasClass("timesheet") && !this.billView.bill.get("billAdjusted"))
 						this.billView.setupCashPointForm($("li.cashPoint"));
+					
+					$saveButton.hide();
 					break;
 				case BillStatus.POSTED:
 				case BillStatus.PAID:
@@ -216,9 +218,9 @@ curl(
 					$saveButton.remove();
 					break;
 				
-				$saveButton.remove();
+				//$saveButton.remove();
 				$printButton.remove();
-				$postButton.remove();
+				//$postButton.remove();
 			
 			}
 
