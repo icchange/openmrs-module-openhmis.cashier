@@ -16,6 +16,8 @@
 <%@ include file="/WEB-INF/template/header.jsp"%>
 <%@ include file="template/localHeader.jsp"%>
 <openmrs:htmlInclude file="/moduleResources/openhmis/cashier/js/screen/bill.js" />
+<openmrs:htmlInclude file="/scripts/jquery/dataTables/css/dataTables_jui.css"/>
+<openmrs:htmlInclude file="/scripts/jquery/dataTables/js/jquery.dataTables.min.js"/>
 
 <h2>
 	<c:choose>
@@ -75,9 +77,7 @@
 <div class="boxHeader">Bills</div>
 <div class="box">
     <table id="billTable" class="display" cellspacing="0"></table>
-</div>
 <script type="text/javascript">
-
 	if ($j) {
 		$j(document).ready(function() {
 			$j("#billTable").dataTable({
@@ -105,6 +105,8 @@
 		});
 	}
 </script>
+</div>
+
 
 <div id="bill"></div>
 <div id="payment" class="box"></div>
