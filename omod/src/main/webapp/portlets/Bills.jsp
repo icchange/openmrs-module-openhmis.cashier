@@ -14,17 +14,12 @@
   ~ Copyright (C) OpenMRS, LLC.  All Rights Reserved.
   --%>
 		
-<openmrs:hasPrivilege privilege="Manage Cashier Bills">
-    &nbsp;<a href="<openmrs:contextPath />/module/openhmis/cashier/bill.form?patientUuid=${patient.uuid}"><openmrs:message code="openhmis.cashier.addBill" /></a>
-    <br />
-    <br />
-</openmrs:hasPrivilege>
 <openmrs:htmlInclude file="/scripts/jquery/dataTables/css/dataTables_jui.css"/>
 <openmrs:htmlInclude file="/scripts/jquery/dataTables/js/jquery.dataTables.min.js"/>
 
-<div class="boxHeader">Bills</div>
+<div class="boxHeader" style="background-color:purple; border-color:purple">Bills</div>
 <div class="box">
-    <table id="billTable" class="display" cellspacing="0"></table>
+    <table id="billTable" class="display"  cellpadding="2" cellspacing="0" style="width:100%; border-color:purple;"></table>
 </div>
 
 <script type="text/javascript">

@@ -55,58 +55,39 @@
 </c:choose>	
 	<li class="cashPoint${timesheet != null ? " timesheet" : "" }">
 		<c:if test="${!empty cashPoint}">
-		<span class="label"><openmrs:message code="openhmis.cashier.cashPoint.name"/>:</span>
+		<openmrs:message code="openhmis.cashier.cashPoint.name"/>:</span>
 			${cashPoint}
+		</c:if>
+	</li>
+	<li class="newBill">
+		<c:if test="${!empty bill}">
+			<a href="bill.form?patientUuid=${patient.uuid}">Go back to patient</a>
 		</c:if>
 	</li>
 </ul>
 <div class="clear"></div>
 
 <div id="patient-view">
-	<div id="patient-details" style="display: none;">
-	</div>
+		<div id="patient-details" style="display: none;"></div>
 	<div id="find-patient" style="display: none;">
-		<openmrs:portlet id="findPatient" url="findPatient" parameters="size=full|hideAddNewPatient=true|showIncludeVoided=false" />
-		<!-- Make sure that the global "doSelectionHandler" is hijacked -->
-		<script type="text/javascript">window.doSelectionHandler = function(index, data) {
-			curl([openhmis.url.backboneBase + 'js/openhmis'], function(openhmis) { openhmis.doSelectionHandler(index,data); });
-		};</script>
+		<openmrs:portlet id="choosePatient" url="findPatient" parameters="size=full|hideAddNewPatient=true|showIncludeVoided=false" />
+		<!-- This GARBAGE js code breaks the way system functions, don't ever cut corners like that again please. -->
+		<!-- Make sure that the global "doSelectionHandler" is hijacked 
+		<script type="text/javascript">
+		window.doSelectionHandler = function(index, data) 
+		{		
+			curl(	[openhmis.url.backboneBase + 'js/openhmis'], 	
+					function(openhmis) 
+					{ 
+						openhmis.doSelectionHandler(index,data); 
+					}
+			);
+		};
+		</script>-->
 	</div>
 </div>
 
-<div class="boxHeader">Bills</div>
-<div class="box">
-    <table id="billTable" class="display" cellspacing="0"></table>
-<script type="text/javascript">
-	if ($j) {
-		$j(document).ready(function() {
-			$j("#billTable").dataTable({
-				aaData: [
-					<c:forEach var="bill" items="${bills}" varStatus="varStatus">
-					<c:if test="${varStatus.index > 0}">,
-					</c:if>[
-						"${bill.dateCreated}",
-						'<a href="<openmrs:contextPath />/module/openhmis/cashier/bill.form?billUuid=${bill.uuid}">${bill.receiptNumber}</a>',
-								"${bill.status}",
-								"${bill.amountPaid}",
-								"${bill.total}"
-					]
-					</c:forEach>
-				],
-				aaSorting: [[0,'desc']],
-				aoColumns: [
-					{ sTitle: "<openmrs:message code="openhmis.cashier.bill.createdOn" />" },
-					{ sTitle: "<openmrs:message code="openhmis.cashier.bill.receiptNumber" />" },
-					{ sTitle: "<openmrs:message code="openhmis.cashier.bill.status" />" },
-					{ sTitle: "<openmrs:message code="openhmis.cashier.bill.totalPaid" />" },
-					{ sTitle: "<openmrs:message code="openhmis.cashier.bill.totalAmount" />" }
-				]
-			});
-		});
-	}
-</script>
-</div>
-
+<openmrs:portlet id="Bills" moduleId="openhmis.cashier" url="Bills" />
 
 <div id="bill"></div>
 <div id="payment" class="box"></div>

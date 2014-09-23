@@ -128,7 +128,7 @@ public class Bill extends BaseOpenmrsData {
 	public void setCashPoint(CashPoint cashPoint) {
 		this.cashPoint = cashPoint;
 	}
-
+	
 	public Bill getBillAdjusted() {
 		return billAdjusted;
 	}
