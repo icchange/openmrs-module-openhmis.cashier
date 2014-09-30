@@ -25,15 +25,6 @@
 	 
 	<!-- Annotation based controllers -->
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
-	<!-- 
-	<bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
-		<property name="mappings">
-			<props>
-				<prop key="/module/openhmis/cashier/portlets/Bills.portlet">Bills</prop>
-			</props>
-		</property>
-	</bean> 
-	-->
 	
 	<context:component-scan base-package="org.openmrs.module.openhmis.cashier.web" />
 

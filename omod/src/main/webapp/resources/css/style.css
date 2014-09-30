@@ -9,15 +9,9 @@ span.label-hint { position: relative; }
 ul#bill-info { font-size: 10pt; }
 ul#bill-info li { margin: 0 3em 10px 0; }
 
-/* Table styles */
-table.bill td { padding-right: 20px; }
-table.bill td.end { padding-right: 0px; }
-table.bill tbody th { font-weight: normal; }
-
 table.bill th.field-quantity, table.bill th.field-price, table.bill th.field-total {
-	width: 12%;
+	width: 13%;
 }
-
 table.bill td.field-quantity select, table.bill td.field-price select {
 	max-width: 100px;
 }
@@ -44,15 +38,6 @@ table.totals { width: 100%; }
 table.totals td.total { width: 13%; text-align: right; }
 table.totals td.label { width: 13%; }
 table.totals td.label, table.totals td.total { padding: 3px 7px 3px 10px; font-weight: bold; }
-
-/* Bills-info styles */
-table.billsTable th.createdOn, table.billTable th.receiptNumber, table.billTable th.status, table.billTable th.totalPaid, table.billTable th.totalAmount {
-	width: 30%;
-}
-
-table.billsTable {
-	width: 100%;
-}
 
 /* Exception for form style */
 li.bbf-field.field-cashPoint div.bbf-editor { margin-left: 7em; }

@@ -25,18 +25,17 @@ curl(
 		var Screen = function() {
 			this.billUuid = openhmis.getQueryStringParameter("billUuid");
 			this.patientUuid = openhmis.getQueryStringParameter("patientUuid");
-			//this.patientId = openhmis.getQueryStringParameter("patientId");
 			
 			this.patientView = new openhmis.PatientView();
 			var self = this;
 
 			
-			/*** Set up patient search selection handler
-			openhmis.doSelectionHandler = function(index, data){
-				self.patientView.takeRawPatient(index, data);
+			// Set up patient search selection handler
+			openhmis.doSelectionHandler = function(i, d){
+				self.patientView.takeRawPatient(i, d);
 				console.log(self.patientView.model);
 				$j(".visit").hide()
-			};***/
+			};
 			
 			var options = new openhmis.GenericModel([], {
 				urlRoot: openhmis.url.page + openhmis.url.cashierBase + "options.json"

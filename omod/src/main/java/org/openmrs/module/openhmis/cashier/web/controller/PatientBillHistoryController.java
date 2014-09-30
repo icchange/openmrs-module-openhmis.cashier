@@ -26,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-import java.lang.Object;
-
 @Controller
 @RequestMapping(value = "/module/openhmis/cashier/portlets/patientBillHistory")
 public class PatientBillHistoryController {
@@ -41,14 +39,9 @@ public class PatientBillHistoryController {
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	public void billHistory(ModelMap model, @RequestParam(value = "patientId", required = false) String patientId) {
+	public void billHistory(ModelMap model, @RequestParam(value = "patientId", required = true) int patientId) {
 		LOG.warn("In bill history controller");
-		
-		if (patientId != null)
-		{
-			LOG.warn("patiendId provided, retrieving bills");
-			List<Bill> bills = billService.findPatientBills(Integer.parseInt(patientId), null);
-			model.addAttribute("bills", bills);
-		}		
+		List<Bill> bills = billService.findPatientBills(patientId, null);
+		model.addAttribute("bills", bills);
 	}
 }

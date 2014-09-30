@@ -17,7 +17,6 @@ import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
 import org.openmrs.module.web.extension.PatientDashboardTabExt;
 
 public class CashierPatientBilHistoryExt extends PatientDashboardTabExt {
-	
 	@Override
 	public String getTabName() {
 		return "openhmis.cashier.patient.bill.history";
@@ -27,7 +26,7 @@ public class CashierPatientBilHistoryExt extends PatientDashboardTabExt {
 	public String getTabId() {
 		return "openhmis.cashier.bill.history";
 	}
-	
+
 	@Override
 	public String getRequiredPrivilege() {
 		return CashierPrivilegeConstants.VIEW_BILLS;

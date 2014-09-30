@@ -13,7 +13,6 @@
   ~
   ~ Copyright (C) OpenMRS, LLC.  All Rights Reserved.
   --%>
-		
 <openmrs:hasPrivilege privilege="Manage Cashier Bills">
     &nbsp;<a href="<openmrs:contextPath />/module/openhmis/cashier/bill.form?patientUuid=${patient.uuid}"><openmrs:message code="openhmis.cashier.addBill" /></a>
     <br />

@@ -26,8 +26,7 @@ define(
 		'link!' + openhmis.url.cashierBase + 'css/style.css'
 	],
 	function($, _, Backbone, openhmis, i18n) {
-		openhmis.BillLineItemView = openhmis.GenericListItemView.extend(
-		{
+		openhmis.BillLineItemView = openhmis.GenericListItemView.extend({
 			initialize: function(options) {
 				this.events = _.extend({}, this.events, {
 					'keypress': 'onKeyPress'
@@ -65,7 +64,7 @@ define(
 				if (form) {
 					form.fields.price.editor.options.options = options;
 					form.fields.price.editor.render();
-					if (price)  
+					if (price)
 						form.fields.price.setValue(price);
 				}
 			},

@@ -19,13 +19,10 @@ define(
 		openhmis.url.cashierBase + 'js/model/payment',
 		openhmis.url.cashierBase + 'js/model/lineItem'
 	],
-	function(openhmis) 
-	{
-		openhmis.Bill = openhmis.GenericModel.extend(
-			{
+	function(openhmis) {
+		openhmis.Bill = openhmis.GenericModel.extend({
 			trackUnsaved: true,
-			meta: 
-			{
+			meta: {
 				name: "Bill",
 				namePlural: "Bills",
 				openmrsType: 'data',
@@ -33,7 +30,6 @@ define(
 			},
 			
 			schema: {
-				dateCreated: { type: 'Object', readOnly: true, objRef: true},
 				billAdjusted: { type: 'Object', objRef: true },
 				cashPoint: { type: 'Object', objRef: true },
 				lineItems: { type: "List", itemType: "NestedModel", model: openhmis.LineItem },
@@ -42,16 +38,14 @@ define(
 				status: { type: 'Text' }
 			},
 						
-			BillStatus: 
-			{
+			BillStatus: {
 				PENDING:	"PENDING",
 				POSTED:		"POSTED",
 				PAID:		"PAID",
 				ADJUSTED:	"ADJUSTED"
 			},
 			
-			initialize: function(attrs, options) 
-			{
+			initialize: function(attrs, options) {
 				openhmis.GenericModel.prototype.initialize.call(this, attrs, options);
 				if (!this.get("lineItems")) this.set("lineItems",
 					new openhmis.GenericCollection([], { model: openhmis.LineItem }), { silent: true });
@@ -61,8 +55,7 @@ define(
 					this.BillStatus.PENDING, { silent: true });
 			},
 			
-			addPayment: function(payment) 
-			{
+			addPayment: function(payment) {
 				payment.meta.parentRestUrl = this.url() + '/';
 				this.get("payments").add(payment);
 			},
@@ -106,16 +99,14 @@ define(
 				return total;
 			},
 			
-			getAmountPaid: function() 
-			{
+			getAmountPaid: function() {
 				var total = this.getTotal();
 				var totalPayments = this.getTotalPayments();
 				
 				return Math.min(total, totalPayments);
 			},
 			
-			validate: function(goAhead) 
-			{
+			validate: function(goAhead) {
 				// By default, backbone validates every time we try try to alter
 				// the model.  We don't want to be bothered with this until we
 				// care.
@@ -128,11 +119,9 @@ define(
 				return null;
 			},
 			
-			toJSON: function() 
-			{
+			toJSON: function() {
 				var attrs = openhmis.GenericModel.prototype.toJSON.call(this);
-				if (attrs.lineItems) 
-				{
+				if (attrs.lineItems) {
 					attrs.lineItems = attrs.lineItems.toJSON();
 					for (var i in attrs.lineItems)
 						attrs.lineItems[i].lineItemOrder = parseInt(i);
@@ -140,8 +129,7 @@ define(
 				return attrs;
 			},
 			
-			parse: function(resp) 
-			{
+			parse: function(resp) {
 				if (resp === null) return resp;
 				if (resp.patient) resp.patient = new openhmis.Patient(resp.patient);
 				if (resp.adjustedBy) resp.adjustedBy = new openhmis.GenericCollection(resp.adjustedBy, { model: openhmis.Bill });
@@ -149,16 +137,13 @@ define(
 				if (resp.billAdjusted) resp.billAdjusted = new openhmis.Bill(resp.billAdjusted);
 				else delete resp.billAdjusted;
 				
-				if (resp.lineItems) 
-				{
-					resp.lineItems = new openhmis.GenericCollection(resp.lineItems, 
-					{
+				if (resp.lineItems) {
+					resp.lineItems = new openhmis.GenericCollection(resp.lineItems, {
 						model: openhmis.LineItem,
 						parse: true
 					});
 				}
-				if (resp.payments) 
-				{
+				if (resp.payments) {
 					var urlRoot = this.url() + '/payment/';
 					var paymentCollection = new openhmis.GenericCollection([], { model: openhmis.Payment });
 					paymentCollection.add(resp.payments, { parse: true, urlRoot: urlRoot });
@@ -169,8 +154,7 @@ define(
 				return resp;
 			},
 			
-			toString: function() 
-			{
+			toString: function() {
 				var str = this.get("receiptNumber");
 				return str ? str : openhmis.GenericModel.prototype.toString.call(this);
 			}
