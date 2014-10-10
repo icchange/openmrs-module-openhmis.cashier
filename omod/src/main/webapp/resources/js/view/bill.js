@@ -26,7 +26,8 @@ define(
 		'link!' + openhmis.url.cashierBase + 'css/style.css'
 	],
 	function($, _, Backbone, openhmis, i18n) {
-		openhmis.BillLineItemView = openhmis.GenericListItemView.extend({
+		openhmis.BillLineItemView = openhmis.GenericListItemView.extend(
+		{
 			initialize: function(options) {
 				this.events = _.extend({}, this.events, {
 					'keypress': 'onKeyPress'

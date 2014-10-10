@@ -22,9 +22,7 @@ import org.openmrs.module.openhmis.commons.api.entity.impl.BaseMetadataDataServi
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class CashPointServiceImpl
-		extends BaseMetadataDataServiceImpl<CashPoint>
-		implements ICashPointService {
+public class CashPointServiceImpl extends BaseMetadataDataServiceImpl<CashPoint> implements ICashPointService {
 	@Override
 	protected IMetadataAuthorizationPrivileges getPrivileges() {
 		return new BasicMetadataAuthorizationPrivileges();

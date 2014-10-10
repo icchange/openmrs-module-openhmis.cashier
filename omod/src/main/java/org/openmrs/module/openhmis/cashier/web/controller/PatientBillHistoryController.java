@@ -13,6 +13,7 @@
  */
 package org.openmrs.module.openhmis.cashier.web.controller;
 
+import org.openmrs.Patient;
 import org.directwebremoting.util.Logger;
 import org.openmrs.api.PatientService;
 import org.openmrs.module.openhmis.cashier.api.IBillService;
@@ -25,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.lang.Integer;
+import java.lang.String;
+import java.lang.Object;
 
 @Controller
 @RequestMapping(value = "/module/openhmis/cashier/portlets/patientBillHistory")
@@ -38,10 +42,27 @@ public class PatientBillHistoryController {
 		this.billService = billServce;
 	}
 
-	@RequestMapping(method = RequestMethod.GET)
-	public void billHistory(ModelMap model, @RequestParam(value = "patientId", required = true) int patientId) {
-		LOG.warn("In bill history controller");
-		List<Bill> bills = billService.findPatientBills(patientId, null);
-		model.addAttribute("bills", bills);
+	//@RequestMapping(method = RequestMethod.GET)
+	public void billHistory(ModelMap model, 
+							@RequestParam(value = "patientId", required = false) String patientId,
+							@RequestParam(value = "patient", required = false) Patient patient)
+	{
+		
+		if (patient != null)
+		{
+			LOG.info("patient provided, retrieving bills");
+			List<Bill> bills = billService.findPatientBills(patient, null);
+			model.addAttribute("bills", bills);
+		}
+		else if (patientId != null)
+		{
+			LOG.warn("patientId provided, retrieving bills");
+			List<Bill> bills = billService.findPatientBills(Integer.parseInt(patientId), null);
+			model.addAttribute("bills", bills);
+		}
+		else
+		{
+			LOG.warn("patientId NOT provided, retrieving nothing");
+		}
 	}
 }

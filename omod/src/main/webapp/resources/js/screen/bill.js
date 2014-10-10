@@ -29,14 +29,14 @@ curl(
 			this.patientView = new openhmis.PatientView();
 			var self = this;
 
-			
+			/*** COMMENTING OUT Hijack
 			// Set up patient search selection handler
 			openhmis.doSelectionHandler = function(i, d){
 				self.patientView.takeRawPatient(i, d);
 				console.log(self.patientView.model);
 				$j(".visit").hide()
-			};
-			
+			};***/
+
 			var options = new openhmis.GenericModel([], {
 				urlRoot: openhmis.url.page + openhmis.url.cashierBase + "options.json"
 			});

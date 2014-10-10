@@ -57,20 +57,27 @@
 			${cashPoint}
 		</c:if>
 	</li>
+	<li class="newBill">
+		<c:if test="${!empty bill}">
+			<a href="<openmrs:contextPath />/module/openhmis/cashier/bill.form?patientUuid=${patient.uuid}"><openmrs:message code="openhmis.cashier.bill.goBackToPatient" /></a>
+		</c:if>
+	</li>
 </ul>
 <div class="clear"></div>
 
 <div id="patient-view">
-	<div id="patient-details" style="display: none;">
-	</div>
+	<div id="patient-details" style="display: none;"></div>
 	<div id="find-patient" style="display: none;">
-		<openmrs:portlet id="findPatient" url="findPatient" parameters="size=full|hideAddNewPatient=true|showIncludeVoided=false" />
-		<!-- Make sure that the global "doSelectionHandler" is hijacked -->
+		<openmrs:portlet id="choosePatient" url="findPatient" parameters="size=full|hideAddNewPatient=true|showIncludeVoided=false" />
+		<!-- COMMENTING OUT "doSelectionHandler" hijacker, because system behavior should always be consistent & predictable -->
+		<!-- Make sure that the global "doSelectionHandler" is hijacked
 		<script type="text/javascript">window.doSelectionHandler = function(index, data) {
 			curl([openhmis.url.backboneBase + 'js/openhmis'], function(openhmis) { openhmis.doSelectionHandler(index,data); });
-		};</script>
+		};</script> -->
 	</div>
 </div>
+
+<openmrs:portlet id="Bills" moduleId="openhmis.cashier" url="patientBillHistory" />
 
 <div id="bill"></div>
 <div id="payment" class="box"></div>

@@ -79,8 +79,7 @@
 		<point>org.openmrs.patientDashboardTab</point>
 		<class>org.openmrs.module.openhmis.cashier.extension.html.CashierPatientBilHistoryExt</class>
 	</extension>
-	 -->
-	<!-- 
+	 
 	<extension>
 		<point>org.openmrs.headerFull.userBar</point>
 		<class>org.openmrs.module.openhmis.cashier.extension.html.CashierLinkExt</class>
