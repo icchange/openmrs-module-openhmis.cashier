@@ -32,17 +32,23 @@ import org.openmrs.module.openhmis.commons.api.PagingInfo;
 import org.openmrs.module.openhmis.commons.api.entity.impl.BaseEntityDataServiceImpl;
 import org.openmrs.module.openhmis.commons.api.entity.security.IEntityAuthorizationPrivileges;
 import org.openmrs.module.openhmis.commons.api.f.Action1;
+import org.openmrs.module.openhmis.inventory.api.impl.LocationUserDataServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.AccessControlException;
 import java.util.List;
 
+import org.openmrs.util.RoleConstants;
+import org.openmrs.Location;
+import org.openmrs.User;
+
 @Transactional
 public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements IEntityAuthorizationPrivileges, IBillService {
 	
 	private static final int MAX_LENGTH_RECEIPT_NUMBER = 255;
     private static final Log LOG = LogFactory.getLog(BillServiceImpl.class);
+    private static final String LOCATIONPROPERTY = "defaultLocation";
 
 	@Override
 	protected IEntityAuthorizationPrivileges getPrivileges() {
@@ -147,6 +153,7 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 			@Override
 			public void apply(Criteria criteria) {
 				billSearch.updateCriteria(criteria);
+				updateLocationUserCriteria(criteria);
 			}
 		});
 	}
@@ -225,5 +232,27 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	@Override
 	public String getGetPrivilege() {
 		return CashierPrivilegeConstants.VIEW_BILLS;
+	}
+	
+
+	private void updateLocationUserCriteria(Criteria criteria) {
+	
+		User user = Context.getAuthenticatedUser();
+		Location location = null;
+		
+		if (user.hasRole(RoleConstants.SUPERUSER))
+			return;
+		
+		try {
+			location = Context.getLocationService().getLocation(Integer.parseInt(user.getUserProperty(LOCATIONPROPERTY)));
+		} catch (Exception e) {}
+		
+		if (location == null) {
+			// impossible criterion so that no results will be returned
+			criteria.add(Restrictions.isNull("creator"));
+			return;
+		} 
+		
+		criteria.add(Restrictions.eq("location", location));		
 	}
 }
