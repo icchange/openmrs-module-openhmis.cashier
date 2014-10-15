@@ -665,8 +665,8 @@
 	</changeSet>
 	<changeSet  id="openhmis.cashier-v2.0-3" author="sluchianov">
 		<preConditions onFail="MARK_RAN">
-			<sqlCheck expectedResult>"0">
-					SELECT COUNT(openmrs.users.user_id)FROM openmrs.users left join openmrs.inv_location_user
+			<sqlCheck expectedResult="1">
+					SELECT If(COUNT(openmrs.users.user_id) > 0, 1, 0) FROM openmrs.users left join openmrs.inv_location_user
 					on openmrs.users.user_id = openmrs.inv_location_user.user_id
 					where openmrs.inv_location_user.location_id is null;
 			</sqlCheck>
