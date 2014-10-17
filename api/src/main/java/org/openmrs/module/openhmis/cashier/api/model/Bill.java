@@ -51,6 +51,14 @@ public class Bill extends BaseOpenmrsData {
 	private Set<Bill> adjustedBy;
 	private Boolean receiptPrinted = false;
 	private Location location;
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
 	
 	public Boolean isReceiptPrinted() {
 		return receiptPrinted;

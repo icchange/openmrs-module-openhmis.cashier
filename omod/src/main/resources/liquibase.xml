@@ -655,15 +655,12 @@
 				baseTableName="cashier_bill_line_item" baseColumnNames="item_id"
 				referencedTableName="inv_item" referencedColumnNames="item_id" />
 	</changeSet>
-	<changeSet  id="openhmis.cashier-v2.0-2" author="sLuchianov">
-		<preConditions onFail="MARK_RAN">
-			<columnExists tableName="cashier_bill" columnName="location_id"/>
-		</preConditions>
+	<changeSet id="openhmis.cashier-v2.0-2" author="sLuchianov">
 		<addColumn tableName="cashier_bill">
-			<column name="location_id" type="int" />
+			<column name="location_id" type="int"></column>
 		</addColumn>
 	</changeSet>
-	<changeSet  id="openhmis.cashier-v2.0-3" author="sluchianov">
+	<changeSet id="openhmis.cashier-v2.0-3" author="sLuchianov">
 		<preConditions onFail="MARK_RAN">
 			<sqlCheck expectedResult="1">
 					SELECT If(COUNT(openmrs.users.user_id) > 0, 1, 0) FROM openmrs.users left join openmrs.inv_location_user
@@ -672,7 +669,7 @@
 			</sqlCheck>
 		</preConditions>
 		<comment>
-		This code populates user location information if it was null originally
+		This code populates user location information if it was null originally.
 		</comment>
 		<sql>
 			INSERT into openmrs.inv_location_user
@@ -681,20 +678,25 @@
 			where openmrs.inv_location_user.location_id is null;
 		</sql>
 	</changeSet>
-	<changeSet  id="openhmis.cashier-v2.0-4" author="sluchianov">
+	<changeSet id="openhmis.cashier-v2.0-4" author="sLuchianov">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="cashier_bill" columnName="location_id"/>
+		</preConditions>
 		<comment>
-		This code copies location information from the bill creator into the bill location for future reference. 
-		Ex: If creator location is set to Nairobi, then all of his bills are set to Nairobi as well. This code exists solely to ensure backwards compatibility.
-		Additional foreign key constraint
+		This code copies location information from the bill creator into the bill location for future reference. It exists solely to ensure backwards compatibility.
 		</comment>
+		<sql>
+			update openmrs.cashier_bill cb, openmrs.inv_location_user ilu
+			set cb.location_id = ilu.location_id
+			where cb.creator = ilu.user_id;
+		</sql>
+	</changeSet>
+	<changeSet  id="openhmis.cashier-v2.0-5" author="sLuchianov">
+		<preConditions onFail="MARK_RAN">
+			<columnExists tableName="cashier_bill" columnName="location_id"/>
+		</preConditions>
 		<addForeignKeyConstraint constraintName="cashier_bill_location_fk"
 		                         baseTableName="cashier_bill" baseColumnNames="location_id"
 		                         referencedTableName="location" referencedColumnNames="location_id"/>
-		<sql>			
-			update openmrs.cashier_bill cb, openmrs.inv_location_user ilu
-			set
-			cb.location_id = ilu.location_id
-			where cb.creator = ilu.user_id;
-		</sql>
 	</changeSet>
 </databaseChangeLog>
