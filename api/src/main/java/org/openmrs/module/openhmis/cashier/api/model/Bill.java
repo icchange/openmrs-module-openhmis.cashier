@@ -43,6 +43,7 @@ public class Bill extends BaseOpenmrsData {
 	private Set<Payment> payments;
 	private Set<Bill> adjustedBy;
 	private Boolean receiptPrinted = false;
+	private Location location;
 	
 	public Boolean isReceiptPrinted() {
 		return receiptPrinted;
