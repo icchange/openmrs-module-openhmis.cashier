@@ -48,6 +48,8 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	private static final int MAX_LENGTH_RECEIPT_NUMBER = 255;
     private static final Log LOG = LogFactory.getLog(BillServiceImpl.class);
 
+	private static final String LOCATIONPROPERTY = "defaultLocation";
+	
 	@Override
 	protected IEntityAuthorizationPrivileges getPrivileges() {
 		return this;
