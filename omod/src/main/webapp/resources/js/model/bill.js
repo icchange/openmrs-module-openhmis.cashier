@@ -17,7 +17,8 @@ define(
 		openhmis.url.cashierBase + 'js/model/cashPoint',
 		openhmis.url.backboneBase + 'js/model/patient',
 		openhmis.url.cashierBase + 'js/model/payment',
-		openhmis.url.cashierBase + 'js/model/lineItem'
+		openhmis.url.cashierBase + 'js/model/lineItem',
+		openhmis.url.backboneBase + 'js/model/location'
 	],
 	function(openhmis) 
 	{
@@ -39,7 +40,8 @@ define(
 				lineItems: { type: "List", itemType: "NestedModel", model: openhmis.LineItem },
 				patient: { type: 'Object', objRef: true },
 				payments: { type: "List", itemType: "NestedModel", model: openhmis.Payment},
-				status: { type: 'Text' }
+				status: { type: 'Text' },
+				location: { type: 'LocationSelect', options: new openhmis.GenericCollection(null, { model: openhmis.Location }), objRef: true}
 			},
 						
 			BillStatus: 
@@ -143,6 +145,8 @@ define(
 			parse: function(resp) 
 			{
 				if (resp === null) return resp;
+				if (resp.location)
+					resp.location = new openhmis.Location(resp.location);
 				if (resp.patient) resp.patient = new openhmis.Patient(resp.patient);
 				if (resp.adjustedBy) resp.adjustedBy = new openhmis.GenericCollection(resp.adjustedBy, { model: openhmis.Bill });
 				

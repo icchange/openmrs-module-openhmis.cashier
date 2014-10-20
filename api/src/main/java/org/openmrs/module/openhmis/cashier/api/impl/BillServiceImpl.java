@@ -38,6 +38,10 @@ import java.math.BigDecimal;
 import java.security.AccessControlException;
 import java.util.List;
 
+import org.openmrs.util.RoleConstants;
+import org.openmrs.Location;
+import org.openmrs.User;
+
 @Transactional
 public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements IEntityAuthorizationPrivileges, IBillService {
 	
@@ -51,6 +55,28 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 
 	@Override
 	protected void validate(Bill bill) throws APIException {
+	}
+	
+
+	private void updateLocationUserCriteria(Criteria criteria) {
+	
+		User user = Context.getAuthenticatedUser();
+		Location location = null;
+		
+		if (user.hasRole(RoleConstants.SUPERUSER))
+			return;
+		
+		try {
+			location = Context.getLocationService().getLocation(Integer.parseInt(user.getUserProperty(LOCATIONPROPERTY)));
+		} catch (Exception e) {}
+		
+		if (location == null) {
+			// impossible criterion so that no results will be returned
+			criteria.add(Restrictions.isNull("creator"));
+			return;
+		} 
+		
+		criteria.add(Restrictions.eq("location", location));		
 	}
 
 	/**
@@ -147,6 +173,7 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 			@Override
 			public void apply(Criteria criteria) {
 				billSearch.updateCriteria(criteria);
+				updateLocationUserCriteria(criteria);
 			}
 		});
 	}
