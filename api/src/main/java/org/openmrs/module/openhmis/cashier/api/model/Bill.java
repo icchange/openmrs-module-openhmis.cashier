@@ -21,6 +21,8 @@ import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
 import org.openmrs.module.openhmis.inventory.api.model.Item;
 import org.openmrs.module.openhmis.inventory.api.model.ItemPrice;
 
+import org.openmrs.Location;
+
 import java.math.BigDecimal;
 import java.security.AccessControlException;
 import java.util.HashSet;
@@ -44,6 +46,14 @@ public class Bill extends BaseOpenmrsData {
 	private Set<Bill> adjustedBy;
 	private Boolean receiptPrinted = false;
 	private Location location;
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
 	
 	public Boolean isReceiptPrinted() {
 		return receiptPrinted;
