@@ -48,6 +48,7 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	private static final int MAX_LENGTH_RECEIPT_NUMBER = 255;
     private static final Log LOG = LogFactory.getLog(BillServiceImpl.class);
 
+    //Defining the name of the property where user location_id is stored
 	private static final String LOCATIONPROPERTY = "defaultLocation";
 	
 	@Override
@@ -152,6 +153,7 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 
 		Criteria criteria = repository.createCriteria(getEntityClass());
 		criteria.add(Restrictions.eq("patient.id", patientId));
+		updateLocationUserCriteria(criteria);
 
 		List<Bill> results = repository.select(getEntityClass(), criteria);
 		removeNullLineItems(results);
