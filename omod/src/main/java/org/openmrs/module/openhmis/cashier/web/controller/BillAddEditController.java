@@ -40,6 +40,7 @@ import java.lang.String;
 import org.directwebremoting.util.Logger;
 
 import org.openmrs.User;
+import org.openmrs.Location;
 
 @Controller
 @RequestMapping(value = CashierWebConstants.BILL_PAGE)
@@ -79,8 +80,7 @@ public class BillAddEditController {
 		model.addAttribute("timesheet", timesheet);
 		User user = Context.getAuthenticatedUser();
 		model.addAttribute("user", user);
-		int location_id = Integer.parseInt(user.getUserProperty(LOCATIONPROPERTY));
-		'model.addAttribute("location_id", location_id);
+		Location location = Context.getLocationService().getLocation(Integer.parseInt(user.getUserProperty("defaultLocation")));
 		model.addAttribute("url", CashierWebConstants.formUrl(CashierWebConstants.BILL_PAGE) + ( (request.getQueryString() != null) ? "?" + request.getQueryString() : ""));
 		
 		if (billUuid != null) 
@@ -134,7 +134,7 @@ public class BillAddEditController {
 				}
 				model.addAttribute("patientIdentifier", patientIdentifier);
 				model.addAttribute("cashPoint", timesheet != null ? timesheet.getCashPoint() : null);
-				return CashierWebConstants.BILL_PAGE;
+				return CashierWebConstants.BILL_PAGE; //CashierWebConstants.redirectUrl(CashierWebConstants.BILL_PAGE) + "?" + "&patientUuid=" + patient.getUuid() + "&locationUuid=" + location.getUuid();
 			}
 			else
 				if ((patientId != null))
@@ -161,7 +161,7 @@ public class BillAddEditController {
 					model.addAttribute("patientInfo", patient);
 					model.addAttribute("patientIdentifier", patientIdentifier);
 					model.addAttribute("cashPoint", timesheet != null ? timesheet.getCashPoint() : null);
-					return CashierWebConstants.redirectUrl(CashierWebConstants.BILL_PAGE) + "?" + "&patientUuid=" + patient.getUuid();// + "&patientId=" + patient.getPatientId().toString();
+					return CashierWebConstants.redirectUrl(CashierWebConstants.BILL_PAGE) + "?" + "&patientUuid=" + patient.getUuid() + "&locationUuid=" + location.getUuid();// + "&patientId=" + patient.getPatientId().toString();
 				}
 			//This button is commented out because our users do not have printers
 			//model.addAttribute("showPrint", true);

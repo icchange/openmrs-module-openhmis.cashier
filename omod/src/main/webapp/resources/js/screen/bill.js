@@ -25,8 +25,16 @@ curl(
 		var Screen = function() {
 			this.billUuid = openhmis.getQueryStringParameter("billUuid");
 			this.patientUuid = openhmis.getQueryStringParameter("patientUuid");
+			this.locationUuid = openhmis.getQueryStringParameter("locationUuid");
 			
 			this.patientView = new openhmis.PatientView();
+			if (this.locationUuid)
+				{
+					var location = new openhmis.Location({ uuid: this.locationUuid });
+					location.fetch({ 
+						silent: true
+					});
+				}
 			var self = this;
 
 			/*** COMMENTING OUT Hijack

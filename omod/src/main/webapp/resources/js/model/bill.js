@@ -41,7 +41,7 @@ define(
 				patient: { type: 'Object', objRef: true },
 				payments: { type: "List", itemType: "NestedModel", model: openhmis.Payment},
 				status: { type: 'Text' },
-				location: { type: 'LocationSelect', options: new openhmis.GenericCollection(null, { model: openhmis.Location }), objRef: true}
+				location: { type: 'Object', objRef: true}
 			},
 						
 			BillStatus: 
