@@ -39,6 +39,8 @@ import java.lang.Integer;
 import java.lang.String;
 import org.directwebremoting.util.Logger;
 
+import org.openmrs.User;
+
 @Controller
 @RequestMapping(value = CashierWebConstants.BILL_PAGE)
 public class BillAddEditController {
@@ -55,6 +57,7 @@ public class BillAddEditController {
 	{
 		Patient patient = null;
 		Timesheet timesheet = null;
+		
 		//LOG.info("In billAddEdit controller");
 		
 		try 
@@ -72,8 +75,12 @@ public class BillAddEditController {
 			// Catch other exceptions, like session timeout
 		}
 		
+
 		model.addAttribute("timesheet", timesheet);
-		model.addAttribute("user", Context.getAuthenticatedUser());
+		User user = Context.getAuthenticatedUser();
+		model.addAttribute("user", user);
+		int location_id = Integer.parseInt(user.getUserProperty(LOCATIONPROPERTY));
+		'model.addAttribute("location_id", location_id);
 		model.addAttribute("url", CashierWebConstants.formUrl(CashierWebConstants.BILL_PAGE) + ( (request.getQueryString() != null) ? "?" + request.getQueryString() : ""));
 		
 		if (billUuid != null) 
