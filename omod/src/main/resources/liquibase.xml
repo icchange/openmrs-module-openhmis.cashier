@@ -662,62 +662,61 @@
 		</addColumn>
 	</changeSet>
 	<changeSet id="openhmis.cashier-v2.0-3" author="sLuchianov">
-		<preConditions onFail="MARK_RAN">
-			<sqlCheck expectedResult="1">
-					SELECT If(COUNT(users.user_id) > 0, 1, 0) FROM users left join inv_location_user
-					on users.user_id = inv_location_user.user_id
-					where inv_location_user.location_id is null;
-			</sqlCheck>
-		</preConditions>
-		<comment>
-		This code populates user location information if it was null originally.
-		</comment>
-		<sql>
-			INSERT into inv_location_user
-			SELECT users.user_id, 1, users.uuid FROM users left join inv_location_user
-			on users.user_id = inv_location_user.user_id
-			where inv_location_user.location_id is null;
-			
-			insert into user_property
-			select u.user_id, 'defaultLocation', 1
-			from users u left join user_property up
-			on u.user_id = up.user_id and property = 'defaultLocation'
-			where up.property_value is null;
-		</sql>
-	</changeSet>
-	<changeSet id="openhmis.cashier-v2.0-4" author="sLuchianov">
-		<preConditions onFail="MARK_RAN">
-			<columnExists tableName="cashier_bill" columnName="location_id"/>
-		</preConditions>
-		<comment>
-		This code copies location information from the bill creator into the bill location for future reference. It exists solely to ensure backwards compatibility.
-		</comment>
-		<sql>
-			update cashier_bill cb, inv_location_user ilu
-			set cb.location_id = ilu.location_id
-			where cb.creator = ilu.user_id;
-		</sql>
-	</changeSet>
-	<changeSet  id="openhmis.cashier-v2.0-5" author="sLuchianov">
-		<preConditions onFail="MARK_RAN">
-			<columnExists tableName="cashier_bill" columnName="location_id"/>
-		</preConditions>
-		<addForeignKeyConstraint constraintName="cashier_bill_location_fk"
-		                         baseTableName="cashier_bill" baseColumnNames="location_id"
-		                         referencedTableName="location" referencedColumnNames="location_id"/>
-	</changeSet>
-	<changeSet  id="openhmis.cashier-v2.0-6" author="sLuchianov">
-		<preConditions onFail="MARK_RAN">
-			<columnExists tableName="cashier_bill" columnName="location_id"/>
-		</preConditions>
-		<comment>
-		This code introduces a trigger that adds location_id value to a created bill
-		</comment>
-		<sql>
-			create trigger cashier_ins_bill_location_id 
-			BEFORE INSERT on cashier_bill FOR EACH ROW 
-			SET NEW.location_id = (SELECT user_property.property_value FROM user_property
-			where user_property.user_id = NEW.creator and user_property.property = 'defaultLocation');
-		</sql>
-	</changeSet>
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="inv_location_user" />
+        </preConditions>
+        <comment>
+        This code populates user location information if it was null originally.
+        </comment>
+        <sql>
+            INSERT into inv_location_user
+            SELECT users.user_id, 1, users.uuid FROM users left join inv_location_user
+            on users.user_id = inv_location_user.user_id
+            where inv_location_user.location_id is null;
+            
+            insert into user_property
+            select u.user_id, 'defaultLocation', 1
+            from users u left join user_property up
+            on u.user_id = up.user_id and property = 'defaultLocation'
+            where up.property_value is null;
+        </sql>
+    </changeSet>
+    <changeSet id="openhmis.cashier-v2.0-4" author="sLuchianov">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <tableExists tableName="inv_location_user" />
+                <columnExists tableName="cashier_bill" columnName="location_id"/>
+            </and>
+        </preConditions>
+        <comment>
+        This code copies location information from the bill creator into the bill location for future reference. It exists solely to ensure backwards compatibility.
+        </comment>
+        <sql>
+            update cashier_bill cb, inv_location_user ilu
+            set cb.location_id = ilu.location_id
+            where cb.creator = ilu.user_id;
+        </sql>
+    </changeSet>
+    <changeSet  id="openhmis.cashier-v2.0-5" author="sLuchianov">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cashier_bill" columnName="location_id"/>
+        </preConditions>
+        <addForeignKeyConstraint constraintName="cashier_bill_location_fk"
+                                 baseTableName="cashier_bill" baseColumnNames="location_id"
+                                 referencedTableName="location" referencedColumnNames="location_id"/>
+    </changeSet>
+    <changeSet  id="openhmis.cashier-v2.0-6" author="sLuchianov">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cashier_bill" columnName="location_id"/>
+        </preConditions>
+        <comment>
+        This code introduces a trigger that adds location_id value to a created bill
+        </comment>
+        <sql>
+            create trigger cashier_ins_bill_location_id 
+            BEFORE INSERT on cashier_bill FOR EACH ROW 
+            SET NEW.location_id = (SELECT user_property.property_value FROM user_property
+            where user_property.user_id = NEW.creator and user_property.property = 'defaultLocation');
+        </sql>
+    </changeSet>
 </databaseChangeLog>
