@@ -5,11 +5,11 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api;
 
@@ -49,11 +49,10 @@ public interface IReceiptNumberGenerator {
 	void load();
 
 	/**
-	 * Generates a new receipt number for the specified {@link Bill}.  Note that the receipt number field for the
-	 * specified bill is NOT set.
+	 * Generates a new receipt number for the specified {@link Bill}. Note that the receipt number field for the specified
+	 * bill is NOT set.
 	 * @param bill The bill to generate a new receipt number for.
 	 * @return The generated receipt number.
 	 */
 	String generateNumber(Bill bill);
 }
-

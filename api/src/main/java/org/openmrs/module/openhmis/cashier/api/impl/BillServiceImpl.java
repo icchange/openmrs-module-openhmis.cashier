@@ -5,86 +5,62 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.impl;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-import org.openmrs.Patient;
-import org.openmrs.annotation.Authorized;
-import org.openmrs.api.APIException;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.openhmis.cashier.api.IBillService;
-import org.openmrs.module.openhmis.cashier.api.IReceiptNumberGenerator;
-import org.openmrs.module.openhmis.cashier.api.ReceiptNumberGeneratorFactory;
-import org.openmrs.module.openhmis.cashier.api.model.Bill;
-import org.openmrs.module.openhmis.cashier.api.search.BillSearch;
-import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
-import org.openmrs.module.openhmis.commons.api.PagingInfo;
-import org.openmrs.module.openhmis.commons.api.entity.impl.BaseEntityDataServiceImpl;
-import org.openmrs.module.openhmis.commons.api.entity.security.IEntityAuthorizationPrivileges;
-import org.openmrs.module.openhmis.commons.api.f.Action1;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.AccessControlException;
 import java.util.List;
 
-import org.openmrs.util.RoleConstants;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.openmrs.Location;
-import org.openmrs.User;
+import org.openmrs.Patient;
+import org.openmrs.annotation.Authorized;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.openhmis.cashier.api.IBillService;
+import org.openmrs.module.openhmis.cashier.api.IReceiptNumberGenerator;
+import org.openmrs.module.openhmis.cashier.api.ReceiptNumberGeneratorFactory;
+import org.openmrs.module.openhmis.cashier.api.model.Bill;
+import org.openmrs.module.openhmis.cashier.api.model.BillLineItem;
+import org.openmrs.module.openhmis.cashier.api.search.BillSearch;
+import org.openmrs.module.openhmis.cashier.api.util.PrivilegeConstants;
+import org.openmrs.module.openhmis.commons.api.PagingInfo;
+import org.openmrs.module.openhmis.commons.api.entity.impl.BaseEntityDataServiceImpl;
+import org.openmrs.module.openhmis.commons.api.entity.security.IEntityAuthorizationPrivileges;
+import org.openmrs.module.openhmis.commons.api.f.Action1;
+import org.openmrs.module.openhmis.inventory.api.util.HibernateCriteriaConstants;
+import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Data service implementation class for {@link Bill}s.
+ */
 @Transactional
-public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements IEntityAuthorizationPrivileges, IBillService {
-	
-	private static final int MAX_LENGTH_RECEIPT_NUMBER = 255;
-    private static final Log LOG = LogFactory.getLog(BillServiceImpl.class);
+public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements IEntityAuthorizationPrivileges
+        , IBillService {
 
-    //Defining the name of the property where user location_id is stored
-	private static final String LOCATIONPROPERTY = "defaultLocation";
-	
+	private static final int MAX_LENGTH_RECEIPT_NUMBER = 255;
+	private static final Log LOG = LogFactory.getLog(BillServiceImpl.class);
+
 	@Override
 	protected IEntityAuthorizationPrivileges getPrivileges() {
 		return this;
 	}
 
 	@Override
-	protected void validate(Bill bill) throws APIException {
-	}
-	
-
-	private void updateLocationUserCriteria(Criteria criteria) {
-	
-		User user = Context.getAuthenticatedUser();
-		Location location = null;
-		
-		if (user.hasRole(RoleConstants.SUPERUSER))
-			return;
-		
-		try {
-			location = Context.getLocationService().getLocation(Integer.parseInt(user.getUserProperty(LOCATIONPROPERTY)));
-		} catch (Exception e) {}
-		
-		if (location == null) {
-			// impossible criterion so that no results will be returned
-			criteria.add(Restrictions.isNull("creator"));
-			return;
-		} 
-		
-		criteria.add(Restrictions.eq("location", location));		
-	}
+	protected void validate(Bill bill) {}
 
 	/**
 	 * Saves the bill to the database, creating a new bill or updating an existing one.
-	 *
 	 * @param bill The bill to be saved.
 	 * @return The saved bill.
 	 * @should Generate a new receipt number if one has not been defined.
@@ -92,22 +68,23 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	 * @should Throw APIException if receipt number cannot be generated.
 	 */
 	@Override
-	@Authorized( { CashierPrivilegeConstants.MANAGE_BILLS } )
+	@Authorized({ PrivilegeConstants.MANAGE_BILLS })
 	@Transactional
-	public Bill save(Bill bill) throws APIException {
+	public Bill save(Bill bill) {
 		if (bill == null) {
 			throw new NullPointerException("The bill must be defined.");
 		}
-		
+
 		/* Check for refund.
 		 * A refund is given when the total of the bill's line items is negative.
 		 */
-		if (bill.getTotal().compareTo(BigDecimal.ZERO) < 0 && !Context.hasPrivilege(CashierPrivilegeConstants.REFUND_MONEY)) {
+		if (bill.getTotal().compareTo(BigDecimal.ZERO) < 0 && !Context.hasPrivilege(PrivilegeConstants.REFUND_MONEY)) {
 			throw new AccessControlException("Access denied to give a refund.");
 		}
 		IReceiptNumberGenerator generator = ReceiptNumberGeneratorFactory.getGenerator();
 		if (generator == null) {
-			LOG.warn("No receipt number generator has been defined.  Bills will not be given a receipt number until one is defined.");
+			LOG.warn("No receipt number generator has been defined.  Bills will not be given a receipt number until one is"
+			        + " defined.");
 		} else {
 			if (StringUtils.isEmpty(bill.getReceiptNumber())) {
 				bill.setReceiptNumber(generator.generateNumber(bill));
@@ -118,9 +95,9 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 	}
 
 	@Override
-	@Authorized( { CashierPrivilegeConstants.VIEW_BILLS } )
+	@Authorized({ PrivilegeConstants.VIEW_BILLS })
 	@Transactional(readOnly = true)
-	public Bill getBillByReceiptNumber(String receiptNumber) throws APIException {
+	public Bill getBillByReceiptNumber(String receiptNumber) {
 		if (StringUtils.isEmpty(receiptNumber)) {
 			throw new IllegalArgumentException("The receipt number must be defined.");
 		}
@@ -128,45 +105,59 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 			throw new IllegalArgumentException("The receipt number must be less than 256 characters.");
 		}
 
-		Criteria criteria = repository.createCriteria(getEntityClass());
+		Criteria criteria = getRepository().createCriteria(getEntityClass());
 		criteria.add(Restrictions.eq("receiptNumber", receiptNumber));
 
-		Bill bill = repository.selectSingle(getEntityClass(), criteria);
+		Bill bill = getRepository().selectSingle(getEntityClass(), criteria);
 		removeNullLineItems(bill);
 		return bill;
 	}
 
 	@Override
-	public List<Bill> findPatientBills(Patient patient, PagingInfo paging) {
+	public List<Bill> getBillsByPatient(Patient patient, PagingInfo paging) {
 		if (patient == null) {
 			throw new NullPointerException("The patient must be defined.");
 		}
 
-		return findPatientBills(patient.getId(), paging);
+		return getBillsByPatientId(patient.getId(), paging);
 	}
 
 	@Override
-	public List<Bill> findPatientBills(int patientId, PagingInfo paging) {
+	public List<Bill> getBillsByPatientId(int patientId, PagingInfo paging) {
 		if (patientId < 0) {
 			throw new IllegalArgumentException("The patient id must be a valid identifier.");
 		}
 
-		Criteria criteria = repository.createCriteria(getEntityClass());
+		Criteria criteria = getRepository().createCriteria(getEntityClass());
 		criteria.add(Restrictions.eq("patient.id", patientId));
-		updateLocationUserCriteria(criteria);
 
-		List<Bill> results = repository.select(getEntityClass(), criteria);
+		List<Bill> results = getRepository().select(getEntityClass(), criteria);
 		removeNullLineItems(results);
 		return results;
 	}
-	
+
 	@Override
-	public List<Bill> findBills(final BillSearch billSearch) {
-		return findBills(billSearch, null);
+	public List<Bill> getBillsByPatientId(int patientId, Location location, PagingInfo paging) {
+		if (patientId < 0) {
+			throw new IllegalArgumentException("The patient id must be a valid identifier.");
+		}
+
+		Criteria criteria = getRepository().createCriteria(getEntityClass());
+		criteria.add(Restrictions.eq("patient.id", patientId));
+		criteria.add(Restrictions.eq("location", location));
+
+		List<Bill> results = getRepository().select(getEntityClass(), criteria);
+		removeNullLineItems(results);
+		return results;
 	}
-	
+
 	@Override
-	public List<Bill> findBills(final BillSearch billSearch, PagingInfo pagingInfo) {
+	public List<Bill> getBills(final BillSearch billSearch) {
+		return getBills(billSearch, null);
+	}
+
+	@Override
+	public List<Bill> getBills(final BillSearch billSearch, PagingInfo pagingInfo) {
 		if (billSearch == null) {
 			throw new NullPointerException("The bill search must be defined.");
 		} else if (billSearch.getTemplate() == null) {
@@ -177,7 +168,19 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 			@Override
 			public void apply(Criteria criteria) {
 				billSearch.updateCriteria(criteria);
-				updateLocationUserCriteria(criteria);
+			}
+		});
+	}
+
+	@Override
+	public List<Bill> getBillsByLocation(final Location location, final Boolean includeRetired, PagingInfo pagingInfo) {
+		return executeCriteria(Bill.class, pagingInfo, new Action1<Criteria>() {
+			@Override
+			public void apply(Criteria criteria) {
+				criteria.add(Restrictions.eq(HibernateCriteriaConstants.LOCATION, location));
+				if (!includeRetired) {
+					criteria.add(Restrictions.eq(HibernateCriteriaConstants.RETIRED, false));
+				}
 			}
 		});
 	}
@@ -187,29 +190,29 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 		from the results before being returned to the caller.
 	 */
 	@Override
-	public List<Bill> getAll(boolean includeVoided, PagingInfo pagingInfo) throws APIException {
+	public List<Bill> getAll(boolean includeVoided, PagingInfo pagingInfo) {
 		List<Bill> results = super.getAll(includeVoided, pagingInfo);
 		removeNullLineItems(results);
 		return results;
 	}
 
 	@Override
-	public Bill getById(int entityId) throws APIException {
+	public Bill getById(int entityId) {
 		Bill bill = super.getById(entityId);
 		removeNullLineItems(bill);
 		return bill;
 	}
 
 	@Override
-	public Bill getByUuid(String uuid) throws APIException {
+	public Bill getByUuid(String uuid) {
 		Bill bill = super.getByUuid(uuid);
 		removeNullLineItems(bill);
 		return bill;
 	}
 
 	@Override
-	public List<Bill> getAll() throws APIException {
-		List<Bill> results =super.getAll();
+	public List<Bill> getAll() {
+		List<Bill> results = super.getAll();
 		removeNullLineItems(results);
 		return results;
 	}
@@ -240,21 +243,21 @@ public class BillServiceImpl extends BaseEntityDataServiceImpl<Bill> implements 
 
 	@Override
 	public String getVoidPrivilege() {
-		return CashierPrivilegeConstants.MANAGE_BILLS;
+		return PrivilegeConstants.MANAGE_BILLS;
 	}
 
 	@Override
 	public String getSavePrivilege() {
-		return CashierPrivilegeConstants.MANAGE_BILLS;
+		return PrivilegeConstants.MANAGE_BILLS;
 	}
 
 	@Override
 	public String getPurgePrivilege() {
-		return CashierPrivilegeConstants.PURGE_BILLS;
+		return PrivilegeConstants.PURGE_BILLS;
 	}
 
 	@Override
 	public String getGetPrivilege() {
-		return CashierPrivilegeConstants.VIEW_BILLS;
+		return PrivilegeConstants.VIEW_BILLS;
 	}
 }

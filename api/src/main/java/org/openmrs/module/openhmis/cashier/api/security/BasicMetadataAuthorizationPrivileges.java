@@ -5,23 +5,24 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.security;
 
-import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
+import org.openmrs.module.openhmis.cashier.api.util.PrivilegeConstants;
 import org.openmrs.module.openhmis.commons.api.entity.security.IMetadataAuthorizationPrivileges;
 
-public class BasicMetadataAuthorizationPrivileges
-		extends BasicEntityAuthorizationPrivileges
-		implements IMetadataAuthorizationPrivileges {
+/**
+ * Default authorization privileges for {@link org.openmrs.OpenmrsMetadata} data services.
+ */
+public class BasicMetadataAuthorizationPrivileges extends BasicEntityAuthorizationPrivileges
+        implements IMetadataAuthorizationPrivileges {
 	@Override
 	public String getRetirePrivilege() {
-		return CashierPrivilegeConstants.MANAGE_METADATA;
+		return PrivilegeConstants.MANAGE_METADATA;
 	}
 }
-

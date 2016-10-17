@@ -5,30 +5,33 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.impl;
 
+import java.util.List;
+
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.openmrs.api.APIException;
 import org.openmrs.module.openhmis.cashier.api.ISequentialReceiptNumberGeneratorService;
+import org.openmrs.module.openhmis.cashier.api.model.CashPoint;
 import org.openmrs.module.openhmis.cashier.api.model.GroupSequence;
 import org.openmrs.module.openhmis.cashier.api.model.SequentialReceiptNumberGeneratorModel;
 import org.openmrs.module.openhmis.cashier.api.security.BasicEntityAuthorizationPrivileges;
 import org.openmrs.module.openhmis.commons.api.entity.impl.BaseObjectDataServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+/**
+ * Data service implementation class for {@link SequentialReceiptNumberGeneratorModel}s.
+ */
 @Transactional
 public class SequentialReceiptNumberGeneratorServiceImpl
-		extends BaseObjectDataServiceImpl<SequentialReceiptNumberGeneratorModel, BasicEntityAuthorizationPrivileges>
-		implements ISequentialReceiptNumberGeneratorService{
+        extends BaseObjectDataServiceImpl<SequentialReceiptNumberGeneratorModel, BasicEntityAuthorizationPrivileges>
+        implements ISequentialReceiptNumberGeneratorService {
 	@Override
 	protected BasicEntityAuthorizationPrivileges getPrivileges() {
 		// No authorization required
@@ -36,7 +39,7 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 	}
 
 	@Override
-	protected void validate(SequentialReceiptNumberGeneratorModel entity) throws APIException {
+	protected void validate(SequentialReceiptNumberGeneratorModel entity) {
 		return;
 	}
 
@@ -54,7 +57,7 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 
 	@Override
 	@Transactional
-	public int reserveNextSequence(String group) throws APIException {
+	public int reserveNextSequence(String group) {
 		// Get the sequence
 		GroupSequence sequence = getSequence(group);
 		if (sequence == null) {
@@ -77,7 +80,7 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 	@Override
 	@Transactional(readOnly = true)
 	public List<GroupSequence> getSequences() {
-		return repository.select(GroupSequence.class);
+		return getRepository().select(GroupSequence.class);
 	}
 
 	@Override
@@ -87,10 +90,10 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 			throw new IllegalArgumentException("The group must be defined.");
 		}
 
-		Criteria criteria = repository.createCriteria(GroupSequence.class);
+		Criteria criteria = getRepository().createCriteria(GroupSequence.class);
 		criteria.add(Restrictions.eq("group", group));
 
-		return repository.selectSingle(GroupSequence.class, criteria);
+		return getRepository().selectSingle(GroupSequence.class, criteria);
 	}
 
 	@Override
@@ -100,7 +103,7 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 			throw new NullPointerException("The sequence to save must be defined.");
 		}
 
-		return repository.save(sequence);
+		return getRepository().save(sequence);
 	}
 
 	@Override
@@ -110,6 +113,6 @@ public class SequentialReceiptNumberGeneratorServiceImpl
 			throw new NullPointerException("The sequence to purge must be defined.");
 		}
 
-		repository.delete(sequence);
+		getRepository().delete(sequence);
 	}
 }

@@ -5,21 +5,24 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api;
+
+import java.util.Date;
+import java.util.List;
 
 import org.openmrs.Provider;
 import org.openmrs.module.openhmis.cashier.api.model.Timesheet;
 import org.openmrs.module.openhmis.commons.api.entity.IEntityDataService;
 
-import java.util.Date;
-import java.util.List;
-
+/**
+ * Interface that represents classes which perform data operations for {@link Timesheet}s.
+ */
 public interface ITimesheetService extends IEntityDataService<Timesheet> {
 	/**
 	 * Gets the current {@link Timesheet} that the specified {@link Provider}.
@@ -45,4 +48,10 @@ public interface ITimesheetService extends IEntityDataService<Timesheet> {
 	 * @should return timesheets that start before date and have not ended
 	 */
 	List<Timesheet> getTimesheetsByDate(Provider cashier, Date date);
+
+	/**
+	 * Closes all open {@link Timesheet}'s.
+	 * @should return close all open timesheets
+	 */
+	void closeOpenTimesheets();
 }

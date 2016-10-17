@@ -5,31 +5,35 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.model;
 
-import org.openmrs.BaseOpenmrsData;
-import org.openmrs.module.openhmis.inventory.api.model.Item;
-
 import java.math.BigDecimal;
 
+import org.openmrs.BaseOpenmrsData;
+import org.openmrs.module.openhmis.inventory.api.model.Item;
+import org.openmrs.module.openhmis.inventory.api.model.ItemPrice;
+
 /**
- * A LineItem represents a line on a {@link Bill} which will bill some quantity
- * of a particular {@link Item}.
+ * A LineItem represents a line on a {@link Bill} which will bill some quantity of a particular {@link Item}.
  */
 public class BillLineItem extends BaseOpenmrsData {
+	public static final long serialVersionUID = 0L;
+
 	private int billLineItemId;
 	private Bill bill;
 	private Item item;
 	private BigDecimal price;
 	private String priceName;
+	private ItemPrice itemPrice;
 	private Integer quantity;
 	private Integer lineItemOrder;
+	private Integer removeItemOrder;
 
 	@Override
 	public Integer getId() {
@@ -89,11 +93,27 @@ public class BillLineItem extends BaseOpenmrsData {
 		this.priceName = priceName;
 	}
 
+	public ItemPrice getItemPrice() {
+		return itemPrice;
+	}
+
+	public void setItemPrice(ItemPrice itemPrice) {
+		this.itemPrice = itemPrice;
+	}
+
 	public Integer getLineItemOrder() {
 		return lineItemOrder;
 	}
 
 	public void setLineItemOrder(Integer lineItemOrder) {
 		this.lineItemOrder = lineItemOrder;
+	}
+
+	public Integer getRemoveItemOrder() {
+		return removeItemOrder;
+	}
+
+	public void setRemoveItemOrder(Integer removeItemOrder) {
+		this.removeItemOrder = removeItemOrder;
 	}
 }

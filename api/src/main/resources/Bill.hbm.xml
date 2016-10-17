@@ -18,20 +18,28 @@
 		<many-to-one name="patient" class="org.openmrs.Patient" not-null="true" column="patient_id" />
 		<many-to-one name="cashPoint" class="CashPoint" not-null="true" column="cash_point_id" />
 		<many-to-one name="billAdjusted" class="Bill" column="adjusted_bill_id" />
-		<many-to-one name="location" class="org.openmrs.Location" column="location_id" />
+        <many-to-one name="location" class="org.openmrs.Location" column="location_id" />
 
 		<property name="status" column="status" not-null="true">
 			<type name="org.hibernate.type.EnumType">
 				<param name="enumClass">org.openmrs.module.openhmis.cashier.api.model.BillStatus</param>
+				<param name="type">12</param>
 			</type>
 		</property>
 
-		<list name="lineItems" lazy="true" inverse="true" cascade="all-delete-orphan">
+		<list name="lineItems" lazy="false" inverse="true" cascade="all-delete-orphan">
 			<key column="bill_id" />
 			<list-index column="line_item_order" />
 			<one-to-many class="BillLineItem" />
 		</list>
-		<set name="payments" lazy="true" inverse="true" cascade="all-delete-orphan">
+        <!--
+        <list name="removeItems" lazy="false" inverse="true" cascade="all-delete-orphan">
+            <key column="bill_id" />
+            <list-index column="remove_item_order" />
+            <one-to-many class="BillLineItem" />
+        </list>
+        -->
+		<set name="payments" lazy="false" inverse="true" cascade="all-delete-orphan">
 			<key column="bill_id" />
 			<one-to-many class="Payment" />
 		</set>
@@ -56,6 +64,7 @@
 		<property name="voidReason" type="java.lang.String" column="void_reason" length="255" />
 
 		<property name="uuid" type="java.lang.String" column="uuid" length="38" unique="true" />
+        <property name="adjustmentReason" type="java.lang.String" column="adjustment_reason" length="500" not-null="false"/>
 	</class>
 
 	<class name="BillLineItem" table="cashier_bill_line_item">
@@ -70,10 +79,12 @@
 
 		<many-to-one name="bill" class="Bill" column="bill_id" not-null="true" />
 		<many-to-one name="item" class="org.openmrs.module.openhmis.inventory.api.model.Item" column="item_id" not-null="true" />
+		<many-to-one name="itemPrice" class="org.openmrs.module.openhmis.inventory.api.model.ItemPrice" column="price_id" />
 		<property name="price" type="java.math.BigDecimal" column="price" not-null="true" />
 		<property name="priceName" type="java.lang.String" column="price_name" length="255" />
 		<property name="quantity" type="int" column="quantity" not-null="true" />
 		<property name="lineItemOrder" type="int" column="line_item_order" />
+        <property name="removeItemOrder" type="int" column="remove_item_order" />
 
 		<!-- bi-directional many-to-one association to User -->
 		<many-to-one name="creator" class="org.openmrs.User" not-null="true" column="creator" />
@@ -102,12 +113,12 @@
 		<discriminator column="bill_payment_id" insert="false" />
 
 		<many-to-one name="bill" class="Bill" column="bill_id" not-null="true" />
-		<many-to-one name="paymentMode" class="PaymentMode" column="payment_mode_id" not-null="true" />
+		<many-to-one name="instanceType" class="PaymentMode" column="payment_mode_id" not-null="true" />
 
 		<property name="amount" type="java.math.BigDecimal" column="amount" not-null="true" />
 		<property name="amountTendered" type="java.math.BigDecimal" column="amount_tendered" not-null="true" />
 
-		<set name="attributes" lazy="true" inverse="true" cascade="all-delete-orphan">
+		<set name="attributes" lazy="false" inverse="true" cascade="all-delete-orphan">
 			<key column="bill_payment_id" />
 			<one-to-many class="PaymentAttribute" />
 		</set>
@@ -134,8 +145,8 @@
 		</id>
 		<discriminator column="bill_payment_attribute_id" insert="false" />
 
-		<many-to-one name="payment" class="Payment" column="bill_payment_id" not-null="true" />
-		<many-to-one name="paymentModeAttributeType" class="PaymentModeAttributeType" column="payment_mode_attribute_type_id" not-null="true" />
+		<many-to-one name="owner" class="Payment" column="bill_payment_id" not-null="true" />
+		<many-to-one name="attributeType" class="PaymentModeAttributeType" column="payment_mode_attribute_type_id" not-null="true" />
 		<property name="value" type="text" access="field" column="value_reference" length="65535" />
 
 		<property name="uuid" type="java.lang.String" column="uuid" length="38" unique="true" />
@@ -153,8 +164,9 @@
 
 		<property name="name" type="java.lang.String" column="name" not-null="true" length="255" />
 		<property name="description" type="java.lang.String" column="description" length="1024" />
+		<property name="sortOrder" type="int" column="sort_order" />
 
-		<list name="attributeTypes" lazy="true" inverse="true" cascade="all-delete-orphan">
+		<list name="attributeTypes" lazy="false" inverse="true" cascade="all-delete-orphan">
 			<key column="payment_mode_id" />
 			<list-index column="attribute_order" />
 			<one-to-many class="PaymentModeAttributeType" />
@@ -182,7 +194,7 @@
 		</id>
 		<discriminator column="payment_mode_attribute_type_id" insert="false" />
 
-		<many-to-one name="paymentMode" class="PaymentMode" column="payment_mode_id" not-null="true" />
+		<many-to-one name="owner" class="PaymentMode" column="payment_mode_id" not-null="true" />
 
 		<property name="attributeOrder" type="int" column="attribute_order" />
 		<property name="name" type="java.lang.String" column="name" not-null="true" length="255" />

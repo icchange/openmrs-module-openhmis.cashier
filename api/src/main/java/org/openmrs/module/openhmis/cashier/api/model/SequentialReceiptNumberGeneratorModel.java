@@ -5,11 +5,11 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.model;
 
@@ -20,6 +20,8 @@ import org.openmrs.module.openhmis.cashier.api.SequentialReceiptNumberGenerator;
  * Model class that represents the settings for the {@link SequentialReceiptNumberGenerator}.
  */
 public class SequentialReceiptNumberGeneratorModel extends BaseOpenmrsObject {
+	public static final long serialVersionUID = 0L;
+
 	public static final String DEFAULT_SEPARATOR = "-";
 	public static final String DEFAULT_CASHIER_PREFIX = "P";
 	public static final String DEFAULT_CASH_POINT_PREFIX = "CP";
@@ -76,11 +78,11 @@ public class SequentialReceiptNumberGeneratorModel extends BaseOpenmrsObject {
 	}
 
 	public void setSeparator(String separator) {
-		if (separator == null) {
-			separator = "";
-		}
-
 		this.separator = separator;
+
+		if (this.separator == null) {
+			this.separator = "";
+		}
 	}
 
 	public String getCashierPrefix() {
@@ -104,11 +106,11 @@ public class SequentialReceiptNumberGeneratorModel extends BaseOpenmrsObject {
 	}
 
 	public void setSequencePadding(int sequencePadding) {
-		if (sequencePadding <= 0) {
-			sequencePadding = 1;
-		}
-
 		this.sequencePadding = sequencePadding;
+
+		if (this.sequencePadding <= 0) {
+			this.sequencePadding = 1;
+		}
 	}
 
 	public boolean isIncludeCheckDigit() {

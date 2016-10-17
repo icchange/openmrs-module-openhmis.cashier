@@ -5,24 +5,25 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.impl;
 
-import org.openmrs.api.APIException;
 import org.openmrs.module.openhmis.cashier.api.IPaymentModeAttributeTypeService;
 import org.openmrs.module.openhmis.cashier.api.model.PaymentModeAttributeType;
 import org.openmrs.module.openhmis.cashier.api.security.BasicMetadataAuthorizationPrivileges;
-import org.openmrs.module.openhmis.commons.api.entity.security.IMetadataAuthorizationPrivileges;
 import org.openmrs.module.openhmis.commons.api.entity.impl.BaseMetadataDataServiceImpl;
+import org.openmrs.module.openhmis.commons.api.entity.security.IMetadataAuthorizationPrivileges;
 
-public class PaymentModeAttributeTypeServiceImpl
-		extends BaseMetadataDataServiceImpl<PaymentModeAttributeType>
-		implements IPaymentModeAttributeTypeService {
+/**
+ * Data service implementation class for {@link PaymentModeAttributeType}s.
+ */
+public class PaymentModeAttributeTypeServiceImpl extends BaseMetadataDataServiceImpl<PaymentModeAttributeType>
+        implements IPaymentModeAttributeTypeService {
 
 	@Override
 	protected IMetadataAuthorizationPrivileges getPrivileges() {
@@ -30,5 +31,5 @@ public class PaymentModeAttributeTypeServiceImpl
 	}
 
 	@Override
-	protected void validate(PaymentModeAttributeType entity) throws APIException { }
+	protected void validate(PaymentModeAttributeType entity) {}
 }

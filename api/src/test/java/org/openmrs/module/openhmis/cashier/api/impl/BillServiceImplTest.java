@@ -1,20 +1,27 @@
 /*
  * The contents of this file are subject to the OpenMRS Public License
- * Version 1.1 (the "License"); you may not use this file except in
+ * Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.impl;
 
-import org.junit.Assert;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+import org.junit.*;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.openmrs.api.APIException;
@@ -28,16 +35,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.agent.PowerMockAgent;
 import org.powermock.modules.junit4.rule.PowerMockRule;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.*;
-
 @PrepareForTest(ReceiptNumberGeneratorFactory.class)
 public class BillServiceImplTest extends IBillServiceTest {
 	@Rule
 	public PowerMockRule rule = new PowerMockRule();
 
-	static {
+	@BeforeClass
+	public static void beforeClass() throws Exception {
 		PowerMockAgent.initializeIfNeeded();
 	}
 
@@ -51,7 +55,7 @@ public class BillServiceImplTest extends IBillServiceTest {
 		receiptNumberGenerator = mock(IReceiptNumberGenerator.class);
 
 		when(ReceiptNumberGeneratorFactory.getGenerator())
-				.thenReturn(receiptNumberGenerator);
+		        .thenReturn(receiptNumberGenerator);
 	}
 
 	@Override
@@ -70,7 +74,7 @@ public class BillServiceImplTest extends IBillServiceTest {
 
 		String receiptNumber = "Test Number";
 		when(receiptNumberGenerator.generateNumber(bill))
-				.thenReturn(receiptNumber);
+		        .thenReturn(receiptNumber);
 
 		service.save(bill);
 		Context.flushSession();
@@ -110,7 +114,7 @@ public class BillServiceImplTest extends IBillServiceTest {
 		bill.setReceiptNumber(null);
 
 		when(receiptNumberGenerator.generateNumber(bill))
-				.thenThrow(new APIException("Test exception"));
+		        .thenThrow(new APIException("Test exception"));
 
 		service.save(bill);
 	}

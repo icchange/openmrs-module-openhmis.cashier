@@ -656,67 +656,229 @@
 				baseTableName="cashier_bill_line_item" baseColumnNames="item_id"
 				referencedTableName="inv_item" referencedColumnNames="item_id" />
 	</changeSet>
-		<changeSet id="openhmis.cashier-v2.0-2" author="sLuchianov">
-		<addColumn tableName="cashier_bill">
-			<column name="location_id" type="int"></column>
-		</addColumn>
-	</changeSet>
-	<changeSet id="openhmis.cashier-v2.0-3" author="sLuchianov">
-        <preConditions onFail="MARK_RAN">
-            <tableExists tableName="inv_location_user" />
-        </preConditions>
-        <comment>
-        This code populates user location information if it was null originally.
-        </comment>
-        <sql>
-            INSERT into inv_location_user
-            SELECT users.user_id, 1, users.uuid FROM users left join inv_location_user
-            on users.user_id = inv_location_user.user_id
-            where inv_location_user.location_id is null;
-            
-            insert into user_property
-            select u.user_id, 'defaultLocation', 1
-            from users u left join user_property up
-            on u.user_id = up.user_id and property = 'defaultLocation'
-            where up.property_value is null;
-        </sql>
+    <changeSet id="openhmis.cashier-v2.0.0-2" author="Benjamin Mwalimu">
+        <comment>Adding the column "adjustment_reason" to the table cashier_bill </comment>
+        <addColumn tableName="cashier_bill">
+            <column name="adjustment_reason" type="varchar(500)"><constraints nullable="true"/></column>
+        </addColumn>
     </changeSet>
-    <changeSet id="openhmis.cashier-v2.0-4" author="sLuchianov">
-        <preConditions onFail="MARK_RAN">
-            <and>
-                <tableExists tableName="inv_location_user" />
-                <columnExists tableName="cashier_bill" columnName="location_id"/>
-            </and>
-        </preConditions>
-        <comment>
-        This code copies location information from the bill creator into the bill location for future reference. It exists solely to ensure backwards compatibility.
-        </comment>
-        <sql>
-            update cashier_bill cb, inv_location_user ilu
-            set cb.location_id = ilu.location_id
-            where cb.creator = ilu.user_id;
-        </sql>
-    </changeSet>
-    <changeSet  id="openhmis.cashier-v2.0-5" author="sLuchianov">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="cashier_bill" columnName="location_id"/>
-        </preConditions>
-        <addForeignKeyConstraint constraintName="cashier_bill_location_fk"
-                                 baseTableName="cashier_bill" baseColumnNames="location_id"
+    <changeSet id="openhmis.cashier-v2.0.0-3" author="Benjamin Mwalimu">
+        <comment>Adding the column "location_id" to the table cashier_cash_point</comment>
+        <addColumn tableName="cashier_cash_point">
+            <column name="location_id" type="int"><constraints nullable="true"/></column>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="cashier_cash_point_location_fk"
+                                 baseTableName="cashier_cash_point" baseColumnNames="location_id"
                                  referencedTableName="location" referencedColumnNames="location_id"/>
     </changeSet>
-    <changeSet  id="openhmis.cashier-v2.0-6" author="sLuchianov">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="cashier_bill" columnName="location_id"/>
-        </preConditions>
-        <comment>
-        This code introduces a trigger that adds location_id value to a created bill
-        </comment>
-        <sql>
-            create trigger cashier_ins_bill_location_id 
-            BEFORE INSERT on cashier_bill FOR EACH ROW 
-            SET NEW.location_id = (SELECT user_property.property_value FROM user_property
-            where user_property.user_id = NEW.creator and user_property.property = 'defaultLocation');
-        </sql>
+    <changeSet id="openhmis.cashier-v2.0.0-4" author="marios">
+    	<comment>Adding new View item Privilege</comment>
+		<sql>
+			INSERT INTO role_privilege (role, privilege)
+			SELECT role, 'View Inventory Items'
+			FROM role_privilege
+			WHERE privilege = 'View Cashier Items'
+		</sql>
+		<comment>Adding new Manage item Privilege</comment>
+		<sql>
+			INSERT INTO role_privilege (role, privilege)
+			SELECT role, 'Manage Inventory Items'
+			FROM role_privilege
+			WHERE privilege = 'Manage Cashier Items'
+		</sql>
+		<comment>Adding new Purge item Privilege</comment>
+		<sql>
+			INSERT INTO role_privilege (role, privilege)
+			SELECT role, 'Purge Inventory Items'
+			FROM role_privilege
+			WHERE privilege = 'Purge Cashier Items'
+		</sql>
+		<comment>Deleting obsolete Cashier Item Role_Privilege Mappings</comment>
+		<sql>
+			DELETE FROM role_privilege
+			WHERE privilege = 'View Cashier Items'
+		</sql>
+		<sql>
+			DELETE FROM role_privilege
+			WHERE privilege = 'Manage Cashier Items'
+		</sql>
+		<sql>
+			DELETE FROM role_privilege
+			WHERE privilege = 'Purge Cashier Items'
+		</sql>
+		<comment>Deleting obsolete Cashier Item Privileges</comment>
+		<sql>
+			DELETE FROM privilege
+			WHERE privilege = 'View Cashier Items'
+		</sql>
+		<sql>
+			DELETE FROM privilege
+			WHERE privilege = 'Manage Cashier Items'
+		</sql>
+		<sql>
+			DELETE FROM privilege
+			WHERE privilege = 'Purge Cashier Items'
+		</sql>
     </changeSet>
+    <changeSet id="openhmis.cashier-v2.0.0-5" author="marios">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="1">SELECT COUNT(*) FROM privilege WHERE privilege = 'Refund Money'</sqlCheck>
+		</preConditions>
+		<sql>
+			INSERT INTO role_privilege (role, privilege)
+			SELECT role, 'Refund Money'
+			FROM role_privilege
+			WHERE privilege = 'Give Refund'
+		</sql>
+		<sql>
+			DELETE FROM role_privilege
+			WHERE privilege = 'Give Refund'
+		</sql>
+		<sql>
+			DELETE FROM privilege
+			WHERE privilege = 'Give Refund'
+		</sql>
+    </changeSet>
+	<changeSet id="openhmis.cashier-v2.0.0-6" author="pochu">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				SELECT COUNT(*) FROM scheduler_task_config
+				WHERE schedulable_class = 'org.openmrs.module.openhmis.cashier.api.tasks.AutoCloseTimesheetsTask'
+				And name = 'Auto Close Open Timesheets Task'
+			</sqlCheck>
+		</preConditions>
+		<comment>Inserting Auto Close Open Timesheets Task into 'schedule_task_config' table</comment>
+		<insert tableName="scheduler_task_config">
+			<column name="name" value="Auto Close Open Timesheets Task" />
+			<column name="description" value="Stops all active visits that match the visit type(s) specified by the value of the global property 'autoCloseVisits.visitType'" />
+			<column name="schedulable_class" value="org.openmrs.module.openhmis.cashier.api.tasks.AutoCloseTimesheetsTask" />
+			<column name="start_time_pattern" value="MM/dd/yyyy HH:mm:ss" />
+			<column name="start_time" valueDate="2011-11-28T23:49:59" />
+			<column name="repeat_interval" value="86400" />
+			<column name="date_created" valueDate="CURRENT_TIMESTAMP" />
+			<column name="created_by" value="1" />
+			<column name="uuid" value="d02004f7-594b-464a-9f89-6d54a887ceaf" />
+		</insert>
+	</changeSet>
+	<changeSet id="openhmis.cashier-v2.0.0-7" author="aderkey">
+		<comment>Changing enums to varchar instead of int</comment>
+		<comment>cashier_bill.status</comment>
+		<addColumn tableName="cashier_bill">
+			<column name="_status" type="varchar(10)"/>
+		</addColumn>
+		<sql>
+			UPDATE cashier_bill SET _status = 'PENDING' where status = 0
+		</sql>
+		<sql>
+			UPDATE cashier_bill SET _status = 'POSTED' where status = 1
+		</sql>
+		<sql>
+			UPDATE cashier_bill SET _status = 'PAID' where status = 2
+		</sql>
+		<sql>
+			UPDATE cashier_bill SET _status = 'CANCELLED' where status = 3
+		</sql>
+		<sql>
+			UPDATE cashier_bill SET _status = 'ADJUSTED' where status = 4
+		</sql>
+		<dropColumn tableName="cashier_bill" columnName="status"/>
+		<renameColumn tableName="cashier_bill" oldColumnName="_status" newColumnName="status" columnDataType="varchar(10)"/>
+		<addNotNullConstraint tableName="cashier_bill" columnName="status" columnDataType="varchar(10)"/>
+
+		<comment>cashier_seq_receipt_number_generator.sequence_type</comment>
+		<addColumn tableName="cashier_seq_receipt_number_generator">
+			<column name="_sequence_type" type="varchar(20)"/>
+		</addColumn>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _sequence_type = 'COUNTER' where sequence_type = 0
+		</sql>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _sequence_type = 'DATE_COUNTER' where sequence_type = 1
+		</sql>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _sequence_type = 'DATE_TIME_COUNTER' where sequence_type = 2
+		</sql>
+		<dropColumn tableName="cashier_seq_receipt_number_generator" columnName="sequence_type"/>
+		<renameColumn tableName="cashier_seq_receipt_number_generator" oldColumnName="_sequence_type" newColumnName="sequence_type" columnDataType="varchar(20)"/>
+		<addNotNullConstraint tableName="cashier_seq_receipt_number_generator" columnName="sequence_type" columnDataType="varchar(20)"/>
+
+		<comment>cashier_seq_receipt_number_generator.grouping_type</comment>
+		<addColumn tableName="cashier_seq_receipt_number_generator">
+			<column name="_grouping_type" type="varchar(25)"/>
+		</addColumn>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _grouping_type = 'NONE' where grouping_type = 0
+		</sql>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _grouping_type = 'CASHIER' where grouping_type = 1
+		</sql>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _grouping_type = 'CASH_POINT' where grouping_type = 2
+		</sql>
+		<sql>
+			UPDATE cashier_seq_receipt_number_generator SET _grouping_type = 'CASHIER_AND_CASH_POINT' where grouping_type = 3
+		</sql>
+		<dropColumn tableName="cashier_seq_receipt_number_generator" columnName="grouping_type"/>
+		<renameColumn tableName="cashier_seq_receipt_number_generator" oldColumnName="_grouping_type" newColumnName="grouping_type" columnDataType="varchar(25)"/>
+		<addNotNullConstraint tableName="cashier_seq_receipt_number_generator" columnName="grouping_type" columnDataType="varchar(25)"/>
+	</changeSet>
+	<changeSet id="openhmis.cashier-v2.0.0-8" author="marios">
+		<addColumn tableName="cashier_bill_line_item">
+			<column name="price_id" type="int"><constraints nullable="false" /></column>
+		</addColumn>
+	</changeSet>
+	<changeSet id="openhmis.cashier-v2.0.0-9" author="marios">
+		<dropNotNullConstraint  columnDataType="int" columnName="price_id" tableName="cashier_bill_line_item"/>
+		<update tableName="cashier_bill_line_item">
+        	<column name="price_id" type="int" value="NULL"/>
+        	<where>price_id = 0</where>
+		</update>
+	</changeSet>
+	<changeSet id="openhmis.cashier-v2.2.0-0" author="ibewes">
+		<addColumn tableName="cashier_payment_mode">
+			<column name="sort_order" type="int"><constraints nullable="true"/></column>
+		</addColumn>
+	</changeSet>
+    <changeSet id="kmri.cashier-0.1" author="ibewes">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cashier_bill" columnName="location_id" />
+            </not>
+        </preConditions>
+        <addColumn tableName="cashier_bill">
+            <column name="location_id" type="int"></column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="kmri.cashier-0.2" author="Mark Nicoll">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cashier_bill_line_item" columnName="remove_item_order" />
+            </not>
+        </preConditions>
+        <addColumn tableName="cashier_bill_line_item">
+            <column name="remove_item_order" type="int"></column>
+        </addColumn>
+    </changeSet>
+    <!-- <changeSet id="kmri.cashier-0.3" author="Mark Nicoll">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="cashier_bill_line_item" columnName="remove_item_order" />
+        </preConditions>
+        <list name="lineItems" lazy="false" inverse="true" cascade="all-delete-orphan">
+            <key column="bill_id" />
+            <list-index column="line_item_order" />
+            <one-to-many class="BillLineItem" />
+        </list>
+        <list name="removeItems" lazy="false" inverse="true" cascade="all-delete-orphan">
+            <key column="bill_id" />
+            <list-index column="remove_item_order" />
+            <one-to-many class="BillLineItem" />
+        </list>
+        <addForeignKeyConstraint constraintName="cashier_bill_line_item_item_id_fk"
+                                 baseTableName="cashier_bill_line_item" baseColumnNames="line_item_order"
+                                 referencedTableName="cashier_bill" referencedColumnNames="item_id" />
+        <addForeignKeyConstraint constraintName="cashier_bill_line_item_item_id_fk"
+                                 baseTableName="cashier_bill_line_item" baseColumnNames="remove_item_order"
+                                 referencedTableName="cashier_bill" referencedColumnNames="item_id" />
+
+    </changeSet> -->
 </databaseChangeLog>

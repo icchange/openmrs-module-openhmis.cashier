@@ -5,13 +5,17 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -22,36 +26,10 @@ import org.openmrs.module.openhmis.cashier.api.model.SequentialReceiptNumberGene
 import org.openmrs.module.openhmis.cashier.web.CashierWebConstants;
 import org.openmrs.patient.impl.LuhnIdentifierValidator;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
+/**
+ * Implements {@link IReceiptNumberGenerator} to generate sequential receipt numbers
+ */
 public class SequentialReceiptNumberGenerator implements IReceiptNumberGenerator {
-	public static enum SequenceType {
-		COUNTER(0),
-		DATE_COUNTER(1),
-		DATE_TIME_COUNTER(2);
-
-		private int value;
-
-		private SequenceType(int value) {
-			this.value = value;
-		}
-	}
-
-	public static enum GroupingType {
-		NONE(0),
-		CASHIER(1),
-		CASH_POINT(2),
-		CASHIER_AND_CASH_POINT(3);
-
-		private int value;
-
-		private GroupingType(int value) {
-			this.value = value;
-		}
-	}
-
 	private static final Log LOG = LogFactory.getLog(ReceiptNumberGeneratorFactory.class);
 
 	private ISequentialReceiptNumberGeneratorService service;
@@ -76,7 +54,7 @@ public class SequentialReceiptNumberGenerator implements IReceiptNumberGenerator
 
 	@Override
 	public String getConfigurationPage() {
-		return CashierWebConstants.SEQ_RECEIPT_NUMBER_GENERATOR_CONFIGURATION_PAGE;
+		return CashierWebConstants.SEQ_RECEIPT_NUMBER_GENERATOR_PAGE;
 	}
 
 	@Override
@@ -146,8 +124,11 @@ public class SequentialReceiptNumberGenerator implements IReceiptNumberGenerator
 				result = model.getCashPointPrefix() + bill.getCashPoint().getId();
 				break;
 			case CASHIER_AND_CASH_POINT:
-				result = model.getCashierPrefix() + bill.getCashier().getId() + model.getSeparator() +
-						model.getCashPointPrefix() + bill.getCashPoint().getId();
+				result =
+				        model.getCashierPrefix() + bill.getCashier().getId() + model.getSeparator()
+				                + model.getCashPointPrefix() + bill.getCashPoint().getId();
+				break;
+			default:
 				break;
 		}
 
@@ -178,6 +159,8 @@ public class SequentialReceiptNumberGenerator implements IReceiptNumberGenerator
 				sequence = format.format(new Date(cal.getTimeInMillis())) + sequence;
 
 				break;
+			default:
+				break;
 		}
 
 		return sequence;
@@ -197,5 +180,30 @@ public class SequentialReceiptNumberGenerator implements IReceiptNumberGenerator
 
 		return number;
 	}
-}
 
+	/**
+	 * The defination of the constants to be used in Sequence receipt generation
+	 */
+	public static enum SequenceType {
+		COUNTER(0), DATE_COUNTER(1), DATE_TIME_COUNTER(2);
+
+		private int value;
+
+		private SequenceType(int value) {
+			this.value = value;
+		}
+	}
+
+	/**
+	 * Defination of the constants to be used in grouping.
+	 */
+	public static enum GroupingType {
+		NONE(0), CASHIER(1), CASH_POINT(2), CASHIER_AND_CASH_POINT(3);
+
+		private int value;
+
+		private GroupingType(int value) {
+			this.value = value;
+		}
+	}
+}

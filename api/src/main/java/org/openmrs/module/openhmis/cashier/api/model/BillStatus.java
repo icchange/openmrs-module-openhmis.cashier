@@ -5,11 +5,11 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.model;
 
@@ -17,7 +17,7 @@ package org.openmrs.module.openhmis.cashier.api.model;
  * The allowable statuses that a {@link Bill} can have.
  */
 public enum BillStatus {
-	PENDING(0), POSTED(4), PAID(1), CANCELLED(2), ADJUSTED(3);
+	PENDING(0), POSTED(4), PAID(1), OVERPAID(5), CANCELLED(2), ADJUSTED(3);
 
 	private int value;
 

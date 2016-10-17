@@ -5,35 +5,37 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api.model;
 
+import java.math.BigDecimal;
+import java.security.AccessControlException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+
 import org.openmrs.BaseOpenmrsData;
+import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
+import org.openmrs.module.openhmis.cashier.api.util.PrivilegeConstants;
 import org.openmrs.module.openhmis.inventory.api.model.Item;
 import org.openmrs.module.openhmis.inventory.api.model.ItemPrice;
-
-import org.openmrs.Location;
-
-import java.math.BigDecimal;
-import java.security.AccessControlException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
 
 /**
  * Model class that represents a list of {@link BillLineItem}s and {@link Payment}s created by a cashier for a patient.
  */
 public class Bill extends BaseOpenmrsData {
+	public static final long serialVersionUID = 0L;
+
 	private Integer billId;
 	private String receiptNumber;
 	private Provider cashier;
@@ -42,19 +44,21 @@ public class Bill extends BaseOpenmrsData {
 	private Bill billAdjusted;
 	private BillStatus status;
 	private List<BillLineItem> lineItems;
+	private List<BillLineItem> removeItems = new ArrayList<BillLineItem>();
 	private Set<Payment> payments;
 	private Set<Bill> adjustedBy;
 	private Boolean receiptPrinted = false;
+	private String adjustmentReason;
 	private Location location;
 
-	public Location getLocation() {
-		return location;
+	public String getAdjustmentReason() {
+		return adjustmentReason;
 	}
 
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setAdjustmentReason(String adjustmentReason) {
+		this.adjustmentReason = adjustmentReason;
 	}
-	
+
 	public Boolean isReceiptPrinted() {
 		return receiptPrinted;
 	}
@@ -76,7 +80,7 @@ public class Bill extends BaseOpenmrsData {
 
 		return total;
 	}
-	
+
 	public BigDecimal getTotalPayments() {
 		BigDecimal total = BigDecimal.ZERO;
 
@@ -91,11 +95,22 @@ public class Bill extends BaseOpenmrsData {
 		return total;
 	}
 
+	/*
+	 * kmri function. gets the total ammount paid valid or not.
+	 */
+	public BigDecimal getTotalPaid() {
+		BigDecimal totalpaid = new BigDecimal(0);
+		for (int j = 0; j < this.getPayments().size(); j++) {
+			totalpaid = totalpaid.add(((Payment)this.getPayments().toArray()[j]).getAmountTendered());
+		}
+		return totalpaid;
+	}
+
 	public BigDecimal getAmountPaid() {
 		BigDecimal total = getTotal();
-		BigDecimal payments = getTotalPayments();
+		BigDecimal totalPayments = getTotalPayments();
 
-		return total.min(payments);
+		return total.min(totalPayments);
 	}
 
 	@Override
@@ -205,7 +220,7 @@ public class Bill extends BaseOpenmrsData {
 		}
 
 		if (this.lineItems == null) {
-			this.lineItems = new Vector<BillLineItem>();
+			this.lineItems = new ArrayList<BillLineItem>();
 		}
 
 		this.lineItems.add(item);
@@ -228,7 +243,8 @@ public class Bill extends BaseOpenmrsData {
 		this.payments = payments;
 	}
 
-	public Payment addPayment(PaymentMode mode, Set<PaymentAttribute> attributes, BigDecimal amount, BigDecimal amountTendered) {
+	public Payment addPayment(PaymentMode mode, Set<PaymentAttribute> attributes, BigDecimal amount,
+	        BigDecimal amountTendered) {
 		if (mode == null) {
 			throw new NullPointerException("The payment mode must be defined.");
 		}
@@ -237,7 +253,7 @@ public class Bill extends BaseOpenmrsData {
 		}
 
 		Payment payment = new Payment();
-		payment.setPaymentMode(mode);
+		payment.setInstanceType(mode);
 		payment.setAmount(amount);
 		payment.setAmountTendered(amountTendered);
 
@@ -245,7 +261,7 @@ public class Bill extends BaseOpenmrsData {
 			payment.setAttributes(attributes);
 
 			for (PaymentAttribute attribute : attributes) {
-				attribute.setPayment(payment);
+				attribute.setOwner(payment);
 			}
 		}
 
@@ -265,16 +281,20 @@ public class Bill extends BaseOpenmrsData {
 
 		this.payments.add(payment);
 		payment.setBill(this);
-		
+
 		this.checkPaidAndUpdateStatus();
 	}
-	
+
 	public boolean checkPaidAndUpdateStatus() {
 		if (this.getPayments().size() > 0) {
 			if (this.status == BillStatus.PENDING || this.status == BillStatus.POSTED) {
-				if (getTotalPayments().compareTo(getTotal()) >= 0) {
+				System.out.println("****set status " + getTotalPaid().intValue() + " " + getTotal().intValue());
+				if (getTotalPaid().compareTo(getTotal()) > 0) {
+					this.setStatus(BillStatus.OVERPAID);
+					return true;
+				} else if (getTotalPaid().compareTo(getTotal()) == 0) {
 					this.setStatus(BillStatus.PAID);
-					return true;					
+					return true;
 				} else if (this.status == BillStatus.PENDING) {
 					this.status = BillStatus.POSTED;
 				}
@@ -316,11 +336,55 @@ public class Bill extends BaseOpenmrsData {
 			this.adjustedBy.remove(adjustedBill);
 		}
 	}
-	
+
 	private void checkAuthorizedToAdjust() {
-		if (!Context.hasPrivilege(CashierPrivilegeConstants.ADJUST_BILLS)) {
+		if (!Context.hasPrivilege(PrivilegeConstants.ADJUST_BILLS)) {
 			throw new AccessControlException("Access denied to adjust bill.");
 		}
 	}
-}
 
+	public void recalculateLineItemOrder() {
+		int orderCounter = 0;
+		for (BillLineItem lineItem : this.getLineItems()) {
+			lineItem.setLineItemOrder(orderCounter++);
+		}
+	}
+
+	public String getLastUpdated() {
+		SimpleDateFormat ft = Context.getDateTimeFormat();
+		String changedStr = (this.getDateChanged() != null) ? ft.format(this.getDateChanged()) : null;
+		String createdStr = (this.getDateCreated() != null) ? ft.format(this.getDateCreated()) : "";
+		String dateString = (changedStr != null) ? changedStr : createdStr;
+
+		return dateString;
+	}
+
+	public void setLocation(Location l) {
+		location = l;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void addRemoveItems(BillLineItem item) {
+		if (item == null) {
+			throw new NullPointerException("The list item to add must be defined.");
+		}
+
+		if (this.removeItems == null) {
+			this.removeItems = new ArrayList<BillLineItem>();
+		}
+
+		this.removeItems.add(item);
+		item.setBill(this);
+	}
+
+	public List<BillLineItem> getRemoveItems() {
+		return removeItems;
+	}
+
+	public void setRemoveItems(List<BillLineItem> lineItems) {
+		removeItems = lineItems;
+	}
+}

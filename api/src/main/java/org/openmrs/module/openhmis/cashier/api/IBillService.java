@@ -5,46 +5,49 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 
 package org.openmrs.module.openhmis.cashier.api;
 
-import org.openmrs.Patient;
-import org.openmrs.annotation.Authorized;
-import org.openmrs.api.APIException;
-import org.openmrs.module.openhmis.cashier.api.model.Bill;
-import org.openmrs.module.openhmis.cashier.api.search.BillSearch;
-import org.openmrs.module.openhmis.cashier.api.util.CashierPrivilegeConstants;
-import org.openmrs.module.openhmis.commons.api.entity.IEntityDataService;
-import org.openmrs.module.openhmis.commons.api.PagingInfo;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
+import org.openmrs.Location;
+import org.openmrs.Patient;
+import org.openmrs.annotation.Authorized;
+import org.openmrs.module.openhmis.cashier.api.model.Bill;
+import org.openmrs.module.openhmis.cashier.api.model.BillLineItem;
+import org.openmrs.module.openhmis.cashier.api.search.BillSearch;
+import org.openmrs.module.openhmis.cashier.api.util.PrivilegeConstants;
+import org.openmrs.module.openhmis.commons.api.PagingInfo;
+import org.openmrs.module.openhmis.commons.api.entity.IEntityDataService;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Interface that represents classes which perform data operations for {@link Bill}s.
+ */
 @Transactional
 public interface IBillService extends IEntityDataService<Bill> {
 	/**
 	 * Gets the {@link Bill} with the specified receipt number or {@code null} if not found.
 	 * @param receiptNumber The receipt number to search for.
 	 * @return The {@link Bill} with the specified receipt number or {@code null}.
-	 * @throws APIException
 	 * @should throw IllegalArgumentException if the receipt number is null
 	 * @should throw IllegalArgumentException if the receipt number is empty
 	 * @should throw IllegalArgumentException if the receipt number is longer than 255 characters
 	 * @should return the bill with the specified reciept number
 	 * @should return null if the receipt number is not found
 	 */
-	@Transactional(readOnly =  true)
-	@Authorized( {CashierPrivilegeConstants.VIEW_BILLS})
-	Bill getBillByReceiptNumber(String receiptNumber) throws APIException;
+	@Transactional(readOnly = true)
+	@Authorized({ PrivilegeConstants.VIEW_BILLS })
+	Bill getBillByReceiptNumber(String receiptNumber);
 
 	/**
-	 *  Returns all {@link Bill}s for the specified patient with the specified paging.
+	 * Returns all {@link Bill}s for the specified patient with the specified paging.
 	 * @param patient The {@link Patient}.
 	 * @param paging The paging information.
 	 * @return All of the bills for the specified patient.
@@ -52,10 +55,10 @@ public interface IBillService extends IEntityDataService<Bill> {
 	 * @should return all bills for the specified patient
 	 * @should return an empty list if the specified patient has no bills
 	 */
-	List<Bill> findPatientBills(Patient patient, PagingInfo paging);
+	List<Bill> getBillsByPatient(Patient patient, PagingInfo paging);
 
 	/**
-	 *  Returns all {@link Bill}s for the specified patient with the specified paging.
+	 * Returns all {@link Bill}s for the specified patient with the specified paging.
 	 * @param patientId The patient id.
 	 * @param paging The paging information.
 	 * @return All of the bills for the specified patient.
@@ -64,19 +67,21 @@ public interface IBillService extends IEntityDataService<Bill> {
 	 * @should return all bills for the specified patient
 	 * @should return an empty list if the specified patient has no bills
 	 */
-	List<Bill> findPatientBills(int patientId, PagingInfo paging);
+	List<Bill> getBillsByPatientId(int patientId, PagingInfo paging);
+
+	List<Bill> getBillsByPatientId(int patientId, Location location, PagingInfo paging);
 
 	/**
-	 * Finds all bills using the specified {@link BillSearch} settings.
+	 * Gets all bills using the specified {@link BillSearch} settings.
 	 * @param billSearch The bill search settings.
 	 * @return The bills found or an empty list if no bills were found.
 	 */
 	@Transactional(readOnly = true)
-	@Authorized( {CashierPrivilegeConstants.VIEW_BILLS})
-	List<Bill> findBills(BillSearch billSearch);
-	
+	@Authorized({ PrivilegeConstants.VIEW_BILLS })
+	List<Bill> getBills(BillSearch billSearch);
+
 	/**
-	 * Finds all bills using the specified {@link BillSearch} settings.
+	 * Gets all bills using the specified {@link BillSearch} settings.
 	 * @param billSearch The bill search settings.
 	 * @param pagingInfo The paging information.
 	 * @return The bills found or an empty list if no bills were found.
@@ -92,10 +97,14 @@ public interface IBillService extends IEntityDataService<Bill> {
 	 * @should not return retired bills from search unless specified
 	 */
 	@Transactional(readOnly = true)
-	@Authorized( {CashierPrivilegeConstants.VIEW_BILLS})
-	List<Bill> findBills(BillSearch BillSearch, PagingInfo pagingInfo);
-	
+	@Authorized({ PrivilegeConstants.VIEW_BILLS })
+	List<Bill> getBills(BillSearch billSearch, PagingInfo pagingInfo);
+
+	@Transactional(readOnly = true)
+	@Authorized({ PrivilegeConstants.VIEW_BILLS })
+	List<Bill> getBillsByLocation(Location l, Boolean isretired, PagingInfo pagingInfo);
+
 	@Override
-	@Authorized(CashierPrivilegeConstants.VIEW_BILLS)
-	Bill getByUuid(String uuid) throws APIException;
+	@Authorized(PrivilegeConstants.VIEW_BILLS)
+	Bill getByUuid(String uuid);
 }

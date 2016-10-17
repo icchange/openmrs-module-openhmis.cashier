@@ -5,13 +5,16 @@
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.web.propertyeditor;
+
+import java.beans.PropertyEditorSupport;
+import java.lang.reflect.ParameterizedType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -19,9 +22,10 @@ import org.openmrs.OpenmrsObject;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.commons.api.entity.IObjectDataService;
 
-import java.beans.PropertyEditorSupport;
-import java.lang.reflect.ParameterizedType;
-
+/**
+ * Support class to build property editors for entities.
+ * @param <E> The model class
+ */
 public class EntityPropertyEditor<E extends OpenmrsObject> extends PropertyEditorSupport {
 	private IObjectDataService<E> service;
 
@@ -30,7 +34,19 @@ public class EntityPropertyEditor<E extends OpenmrsObject> extends PropertyEdito
 	}
 
 	@Override
-	public void setAsText(String text) throws IllegalArgumentException {
+	@SuppressWarnings("unchecked")
+	public String getAsText() {
+		E entity = (E)getValue();
+
+		if (entity == null) {
+			return "";
+		} else {
+			return entity.getId().toString();
+		}
+	}
+
+	@Override
+	public void setAsText(String text) {
 		if (StringUtils.isEmpty(text)) {
 			setValue(null);
 		} else {
@@ -48,22 +64,10 @@ public class EntityPropertyEditor<E extends OpenmrsObject> extends PropertyEdito
 		}
 	}
 
-	@Override
-	@SuppressWarnings("unchecked")
-	public String getAsText() {
-		E entity = (E)getValue();
-
-		if (entity == null) {
-			return "";
-		} else {
-			return entity.getId().toString();
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	protected Class<E> getEntityClass() {
 		ParameterizedType parameterizedType = (ParameterizedType)getClass().getGenericSuperclass();
 
-		return (Class) parameterizedType.getActualTypeArguments()[0];
+		return (Class)parameterizedType.getActualTypeArguments()[0];
 	}
 }

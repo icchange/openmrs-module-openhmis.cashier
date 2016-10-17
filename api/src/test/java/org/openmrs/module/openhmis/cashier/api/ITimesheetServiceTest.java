@@ -1,17 +1,21 @@
 /*
  * The contents of this file are subject to the OpenMRS Public License
- * Version 1.1 (the "License"); you may not use this file except in
+ * Version 2.0 (the "License"); you may not use this file except in
  * compliance with the License. You may obtain a copy of the License at
  * http://license.openmrs.org
  *
  * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and
+ * limitations under the License.
  *
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ * Copyright (C) OpenHMIS.  All Rights Reserved.
  */
 package org.openmrs.module.openhmis.cashier.api;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,10 +24,6 @@ import org.openmrs.api.ProviderService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.openhmis.cashier.api.model.Timesheet;
 import org.openmrs.module.openhmis.commons.api.entity.IEntityDataServiceTest;
-
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
 
 public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetService, Timesheet> {
 	private ProviderService providerService;
@@ -44,7 +44,7 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 	}
 
 	@Override
-	protected Timesheet createEntity(boolean valid) {
+	public Timesheet createEntity(boolean valid) {
 		Timesheet timesheet = new Timesheet();
 
 		if (valid) {
@@ -146,7 +146,8 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 	 * @see ITimesheetService#getCurrentTimesheet(org.openmrs.Provider)
 	 */
 	@Test
-	public void getCurrentTimesheet_shouldReturnTheMostRecentTimesheetIfTheCashierIsClockedIntoMultipleTimesheets() throws Exception {
+	public void getCurrentTimesheet_shouldReturnTheMostRecentTimesheetIfTheCashierIsClockedIntoMultipleTimesheets()
+	        throws Exception {
 		Provider cashier = providerService.getProvider(0);
 		Timesheet original = service.getCurrentTimesheet(cashier);
 
@@ -215,7 +216,7 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 
 		Assert.assertNotNull(results);
 		Assert.assertEquals(1, results.size());
-		Assert.assertEquals(4, (int) results.get(0).getId());
+		Assert.assertEquals(4, (int)results.get(0).getId());
 	}
 
 	/**
@@ -229,7 +230,7 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 
 		Assert.assertNotNull(results);
 		Assert.assertEquals(1, results.size());
-		Assert.assertEquals(5, (int) results.get(0).getId());
+		Assert.assertEquals(5, (int)results.get(0).getId());
 	}
 
 	/**
@@ -243,7 +244,7 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 
 		Assert.assertNotNull(results);
 		Assert.assertEquals(1, results.size());
-		Assert.assertEquals(6, (int) results.get(0).getId());
+		Assert.assertEquals(6, (int)results.get(0).getId());
 	}
 
 	/**
@@ -257,6 +258,6 @@ public class ITimesheetServiceTest extends IEntityDataServiceTest<ITimesheetServ
 
 		Assert.assertNotNull(results);
 		Assert.assertEquals(1, results.size());
-		Assert.assertEquals(7, (int) results.get(0).getId());
+		Assert.assertEquals(7, (int)results.get(0).getId());
 	}
 }
